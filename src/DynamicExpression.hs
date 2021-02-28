@@ -1,5 +1,6 @@
 module DynamicExpression
-  ( DynamicExpression(..), intoImplExpr
+  ( DynamicExpression(..)
+  , intoImplExpr
   ) where
 
 import Data.BinaryTree (BinaryTree(..))

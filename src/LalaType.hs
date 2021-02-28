@@ -1,5 +1,4 @@
-{-# LANGUAGE TemplateHaskell, TypeSynonymInstances,
-  FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 -- | This file is the main interface to the `Typiara` world.
 -- Other modules should not import `Typiara` directly (with a few, minor
@@ -27,7 +26,6 @@ import qualified Typiara.TypeEnv as TypeEnv
 import qualified Typiara.TypeTree as TypeTree
 
 import Control.Monad ((>=>))
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..))
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Traversable (mapAccumL)
 import Text.Read (readMaybe)
@@ -68,13 +66,6 @@ import Utils (fromListRejectOverlap, replaceValues)
 newtype LalaType =
   LalaType (TypeEnv Type Char)
   deriving (Eq, Show, Ord)
-
--- TODO: JSON-ify through a helper data object.
-instance FromJSON LalaType where
-  parseJSON (Object v) = undefined
-
-instance ToJSON LalaType where
-  toJSON _ = undefined
 
 un (LalaType x) = x
 

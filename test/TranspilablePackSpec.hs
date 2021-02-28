@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes, OverloadedLists #-}
 
 module TranspilablePackSpec
   ( spec
@@ -7,6 +7,7 @@ module TranspilablePackSpec
 import Assembly
 import Data.BinaryTree
 import Data.Either (isLeft)
+import Data.Map.Strict
 import Expression (Literal(..))
 import Impl
 import Lang (Lang(..))
@@ -19,26 +20,22 @@ import Text.RawString.QQ
 import TranspilablePack
 
 addImplPy =
-  ( "Add"
-  , ImplPiece $
-    Impl (parseTypeOrDie "CNum a => a -> a -> a") (pyLambda ["x", "y"] "x + y"))
+  ImplPiece $
+  Impl (parseTypeOrDie "CNum a => a -> a -> a") (pyLambda ["x", "y"] "x + y")
 
 addImplJs =
-  ( "Add"
-  , ImplPiece $
-    Impl (parseTypeOrDie "CNum a => a -> a -> a") (jsLambda ["x", "y"] "x + y"))
+  ImplPiece $
+  Impl (parseTypeOrDie "CNum a => a -> a -> a") (jsLambda ["x", "y"] "x + y")
 
 incImpl =
-  ( "Inc"
-  , ExprPiece
-      ((fromExpression (parseExpressionOrDie "x -> ((Add 1) x)") incTypeDef)))
+  ExprPiece
+    ((fromExpression (parseExpressionOrDie "x -> ((Add 1) x)") incTypeDef))
 
 applyImpl =
-  ( "Apply"
-  , ExprPiece
-      ((fromExpression
-          (parseExpressionOrDie "fun arg -> (fun arg)")
-          (parseTypeOrDie "Nil a, Nil b => (a -> b) -> a -> b"))))
+  ExprPiece
+    ((fromExpression
+        (parseExpressionOrDie "fun arg -> (fun arg)")
+        (parseTypeOrDie "Nil a, Nil b => (a -> b) -> a -> b")))
 
 spec :: Spec
 spec =
@@ -46,8 +43,8 @@ spec =
     describe "Py" $ do
       it "Add 1 1" $
         transpilePack
+          ([("Add", [addImplPy])] !)
           (TranspilablePack
-             [addImplPy]
              (((Leaf $ Right $ "Add") `Node` (Leaf $ Left $ IntLiteral 1)) `Node`
               (Leaf $ Left $ IntLiteral 1))
              Py
@@ -63,8 +60,8 @@ ret = Ret|]
           ]
       it "Inc(1)" $
         transpilePack
+          ([("Add", [addImplPy]), ("Inc", [incImpl])] !)
           (TranspilablePack
-             [addImplPy, incImpl]
              ((Leaf $ Right $ "Inc") `Node` (Leaf $ Left $ IntLiteral 1))
              Py
              "a.py") `shouldBe`
@@ -81,8 +78,8 @@ ret = Ret|]
           ]
       it "Add(2, Inc(1))" $
         transpilePack
+          ([("Add", [addImplPy]), ("Inc", [incImpl])] !)
           (TranspilablePack
-             [addImplPy, incImpl]
              (((Leaf $ Right $ "Add") `Node` (Leaf $ Left $ IntLiteral 2)) `Node`
               ((Leaf $ Right $ "Inc") `Node` (Leaf $ Left $ IntLiteral 1)))
              Py
@@ -100,8 +97,8 @@ ret = Ret|]
           ]
       it "HOF with lambda" $
         transpilePack
+          ([("Add", [addImplPy]), ("Inc", [incImpl]), ("Apply", [applyImpl])] !)
           (TranspilablePack
-             [addImplPy, incImpl, applyImpl]
              (((Leaf $ Right $ "Apply") `Node` (Leaf $ Right $ "Inc")) `Node`
               (Leaf $ Left $ IntLiteral 1))
              Py
@@ -121,7 +118,8 @@ ret = Ret|]
           ]
       it "string with special chars" $
         transpilePack
-          (TranspilablePack [] (Leaf $ Left $ StrLiteral "\"c=3\"") Py "a.py") `shouldBe`
+          mempty
+          (TranspilablePack (Leaf $ Left $ StrLiteral "\"c=3\"") Py "a.py") `shouldBe`
         Right
           [ InlineAssembly
               [r|Ret = "\"c=3\""
@@ -132,13 +130,14 @@ ret = Ret|]
           ]
       it "import" $
         transpilePack
-          (TranspilablePack
-             [ ( "Imported"
-               , ImplPiece $
+          ([ ( "Imported"
+             , [ ImplPiece $
                  Impl
                    (parseTypeOrDie "Nil a => a -> a")
-                   (pyImport ["some", "path"] "fun"))
-             ]
+                   (pyImport ["some", "path"] "fun")
+               ])
+           ] !)
+          (TranspilablePack
              ((Leaf $ Right $ "Imported") `Node` (Leaf $ Left $ IntLiteral 1))
              Py
              "a.py") `shouldBe`
@@ -154,8 +153,8 @@ ret = Ret|]
     describe "Js" $
       it "Add 1 1" $
       transpilePack
+        ([("Add", [addImplJs])] !)
         (TranspilablePack
-           [addImplJs]
            (((Leaf $ Right $ "Add") `Node` (Leaf $ Left $ IntLiteral 1)) `Node`
             (Leaf $ Left $ IntLiteral 1))
            Js

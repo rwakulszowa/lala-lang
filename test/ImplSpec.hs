@@ -4,9 +4,9 @@ module ImplSpec
   ( spec
   ) where
 
-import Text.RawString.QQ
 import Impl
 import Test.Hspec
+import Text.RawString.QQ
 
 import TestingUtils (parseTypeOrDie)
 
@@ -25,7 +25,8 @@ spec =
         "add"
         (Impl
            (parseTypeOrDie "CAny a => a -> a -> a")
-           (pyDef ["x", "y"] ["ans = x + y", "return ans"])) `shouldBe` [r|def add(arg):
+           (pyDef ["x", "y"] ["ans = x + y", "return ans"])) `shouldBe`
+      [r|def add(arg):
     def wrapper():
         def inner(x):
             def inner(y):

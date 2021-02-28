@@ -1,12 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module PieceOfLogic
   ( PieceOfLogic(..)
   , pieceDeps
   , getType
   ) where
-
-import Data.Aeson.TH (defaultOptions, deriveJSON)
 
 import Data.Set (Set)
 import Impl (Impl, typ)
@@ -18,8 +14,6 @@ data PieceOfLogic
   = ImplPiece Impl
   | ExprPiece ProcessedExpression
   deriving (Eq, Show)
-
-$(deriveJSON defaultOptions ''PieceOfLogic)
 
 pieceDeps :: PieceOfLogic -> Set String
 pieceDeps (ImplPiece _) = mempty

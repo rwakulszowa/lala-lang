@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 -- | Externally defined implementations.
 -- This module exposes constructors for supported variants and logic
 -- converting them into valid source code.
@@ -19,7 +17,6 @@ module Impl
   , toSourceCode
   ) where
 
-import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Bifunctor (first)
 import Data.List (intercalate)
 import Expression
@@ -62,14 +59,6 @@ data InlineSrc
   | JsLambda [String] String
   | JsLiteral String
   deriving (Eq, Show)
-
-$(deriveJSON defaultOptions ''Impl)
-
-$(deriveJSON defaultOptions ''Src)
-
-$(deriveJSON defaultOptions ''InlineSrc)
-
-$(deriveJSON defaultOptions ''StandaloneSrc)
 
 instance WithLang Src where
   getLang (InlineSrc s) = getLang s

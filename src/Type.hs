@@ -1,11 +1,10 @@
 {-# LANGUAGE DeriveTraversable, DeriveDataTypeable,
-  MultiParamTypeClasses, FlexibleInstances, TemplateHaskell #-}
+  MultiParamTypeClasses, FlexibleInstances #-}
 
 module Type
   ( Type(..)
   ) where
 
-import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data, Typeable, toConstr)
 import Typiara.Data.Tagged (Tagged(..))
 import Typiara.FT (FT(..))
@@ -19,8 +18,6 @@ data Type a
   | CNum
   | CStr
   deriving (Eq, Show, Read, Ord, Functor, Foldable, Traversable, Data, Typeable)
-
-$(deriveJSON defaultOptions ''Type)
 
 instance Typ Type where
   unify Nil a = Right (Unified a)

@@ -1,11 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Assembly
   ( Assembly(..)
   , build
   ) where
 
-import Data.Aeson.TH (defaultOptions, deriveJSON, tagSingleConstructors)
 import qualified Impl
 import qualified Lang
 import PieceOfLogic (PieceOfLogic)
@@ -20,8 +17,6 @@ data Assembly
     , lang :: Lang.Lang
     }
   deriving (Show, Eq)
-
-$(deriveJSON defaultOptions {tagSingleConstructors = True} ''Assembly)
 
 kReturnId = "ret"
 

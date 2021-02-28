@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Expression
@@ -16,7 +15,6 @@ module Expression
   , fmapExternalRefs
   ) where
 
-import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.BinaryTree (BinaryTree(..))
 import qualified Data.Set as Set
 
@@ -67,14 +65,6 @@ data Literal
   = IntLiteral Integer
   | StrLiteral String
   deriving (Show, Eq, Ord)
-
-$(deriveJSON defaultOptions ''Expression)
-
-$(deriveJSON defaultOptions ''ImplExprLeaf)
-
-$(deriveJSON defaultOptions ''Ref)
-
-$(deriveJSON defaultOptions ''Literal)
 
 -- | Convenience constructors.
 intLiteral = Leaf . ImplExprLit . IntLiteral

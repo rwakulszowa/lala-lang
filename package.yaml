@@ -24,7 +24,6 @@ dependencies:
 - containers
 - hspec
 - split
-- aeson
 - bytestring
 - parsec
 - parsec-numbers

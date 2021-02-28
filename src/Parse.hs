@@ -11,7 +11,6 @@ module Parse
   , SignatureToken(..)
   ) where
 
-import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.BinaryTree (BinaryTree(..))
 import Data.Char
 import Data.List (elemIndex, intercalate)
