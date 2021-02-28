@@ -7,6 +7,7 @@ module LalaTypeSpec
 import LalaType
 import Test.Hspec
 
+import Data.List.NonEmpty (NonEmpty(..))
 import Data.Map (Map)
 import Data.Tree (Tree(..))
 import LalaType (LalaType(..))
@@ -30,7 +31,7 @@ spec = do
       fromParsedType
         (ParsedType
            [ParsedConstraint (TypeTag "Nil") (TypeVarId "a")]
-           (SignatureLeaf (TypeVarId "a"))) `shouldBe`
+           (SignatureLeaf (TypeVarId "a" :| []))) `shouldBe`
       Right (t' (Node 'a' []) [('a', TypeTag "Nil")])
     it "trivial function" $
       fromParsedType
@@ -39,8 +40,8 @@ spec = do
            , ParsedConstraint (TypeTag "CStr") (TypeVarId "y")
            ]
            (SignatureNode
-              (SignatureLeaf (TypeVarId "x"))
-              (SignatureLeaf (TypeVarId "y")))) `shouldBe`
+              (SignatureLeaf (TypeVarId "x" :| []))
+              (SignatureLeaf (TypeVarId "y" :| [])))) `shouldBe`
       Right
         (t'
            (Node 'a' [Node 'b' [], Node 'c' []])
@@ -50,8 +51,8 @@ spec = do
         (ParsedType
            [ParsedConstraint (TypeTag "Nil") (TypeVarId "x")]
            (SignatureNode
-              (SignatureLeaf (TypeVarId "x"))
-              (SignatureLeaf (TypeVarId "x")))) `shouldBe`
+              (SignatureLeaf (TypeVarId "x" :| []))
+              (SignatureLeaf (TypeVarId "x" :| [])))) `shouldBe`
       Right
         (t'
            (Node 'a' [Node 'b' [], Node 'b' []])
@@ -64,9 +65,9 @@ spec = do
            ]
            (SignatureNode
               (SignatureNode
-                 (SignatureLeaf (TypeVarId "x"))
-                 (SignatureLeaf (TypeVarId "y")))
-              (SignatureLeaf (TypeVarId "x")))) `shouldBe`
+                 (SignatureLeaf (TypeVarId "x" :| []))
+                 (SignatureLeaf (TypeVarId "y" :| [])))
+              (SignatureLeaf (TypeVarId "x" :| [])))) `shouldBe`
       Right
         (t'
            (Node 'a' [Node 'b' [Node 'c' [], Node 'd' []], Node 'c' []])
@@ -75,6 +76,17 @@ spec = do
            , ('c', TypeTag "Nil")
            , ('d', TypeTag "Nil")
            ])
+    it "type application" $
+      fromParsedType
+        (ParsedType
+           [ ParsedConstraint (TypeTag "CSeq") (TypeVarId "s")
+           , ParsedConstraint (TypeTag "CNum") (TypeVarId "a")
+           ]
+           (SignatureLeaf (TypeVarId "s" :| [TypeVarId "a"]))) `shouldBe`
+      Right
+        (t'
+           (Node 'a' [Node 'b' []])
+           [('a', TypeTag "CSeq"), ('b', TypeTag "CNum")])
   describe "unLalaType" $ do
     it "singleton" $
       unLalaType (t' (Node 'a' []) [('a', TypeTag "CNum")]) `shouldBe`

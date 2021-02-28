@@ -4,6 +4,7 @@ module ParseSpec
 
 import Data.BinaryTree
 import Data.Either (isLeft)
+import Data.List.NonEmpty
 import Expression
 import Parse
 import Test.Hspec
@@ -58,11 +59,14 @@ spec = do
         (ParsedType
            [ParsedConstraint (TypeTag "Num") (TypeVarId "a")]
            (SignatureNode
-              (SignatureLeaf (TypeVarId "a"))
-              (SignatureLeaf (TypeVarId "a"))))
+              (SignatureLeaf (TypeVarId "a" :| []))
+              (SignatureLeaf (TypeVarId "a" :| []))))
     it "no constraints" $
       parseType "=> x" `shouldBe`
-      Right (ParsedType [] (SignatureLeaf (TypeVarId "x")))
+      Right (ParsedType [] (SignatureLeaf (TypeVarId "x" :| [])))
+    it "type application" $
+      parseType "=> s a" `shouldBe`
+      Right (ParsedType [] (SignatureLeaf (TypeVarId "s" :| [TypeVarId "a"])))
     it "multiple constraints" $
       parseType "Num a, Show b => a -> b" `shouldBe`
       Right
@@ -71,20 +75,20 @@ spec = do
            , ParsedConstraint (TypeTag "Show") (TypeVarId "b")
            ]
            (SignatureNode
-              (SignatureLeaf (TypeVarId "a"))
-              (SignatureLeaf (TypeVarId "b"))))
+              (SignatureLeaf (TypeVarId "a" :| []))
+              (SignatureLeaf (TypeVarId "b" :| []))))
     it "function with arity > 1" $
       parseType "=> a -> b -> c -> d" `shouldBe`
       Right
         (ParsedType
            []
            (SignatureNode
-              (SignatureLeaf (TypeVarId "a"))
+              (SignatureLeaf (TypeVarId "a" :| []))
               (SignatureNode
-                 (SignatureLeaf (TypeVarId "b"))
+                 (SignatureLeaf (TypeVarId "b" :| []))
                  (SignatureNode
-                    (SignatureLeaf (TypeVarId "c"))
-                    (SignatureLeaf (TypeVarId "d"))))))
+                    (SignatureLeaf (TypeVarId "c" :| []))
+                    (SignatureLeaf (TypeVarId "d" :| []))))))
     it "hof" $
       parseType "=> (a -> b) -> c" `shouldBe`
       Right
@@ -92,9 +96,9 @@ spec = do
            []
            (SignatureNode
               (SignatureNode
-                 (SignatureLeaf (TypeVarId "a"))
-                 (SignatureLeaf (TypeVarId "b")))
-              (SignatureLeaf (TypeVarId "c"))))
+                 (SignatureLeaf (TypeVarId "a" :| []))
+                 (SignatureLeaf (TypeVarId "b" :| [])))
+              (SignatureLeaf (TypeVarId "c" :| []))))
     it "right side parens" $ parseType "=> a -> (b -> c)" `shouldSatisfy` isLeft
     it "multiple parens" $
       parseType "=> (a -> b) -> (b -> c) -> c -> d" `shouldBe`
@@ -103,12 +107,12 @@ spec = do
            []
            (SignatureNode
               (SignatureNode
-                 (SignatureLeaf (TypeVarId "a"))
-                 (SignatureLeaf (TypeVarId "b")))
+                 (SignatureLeaf (TypeVarId "a" :| []))
+                 (SignatureLeaf (TypeVarId "b" :| [])))
               (SignatureNode
                  (SignatureNode
-                    (SignatureLeaf (TypeVarId "b"))
-                    (SignatureLeaf (TypeVarId "c")))
+                    (SignatureLeaf (TypeVarId "b" :| []))
+                    (SignatureLeaf (TypeVarId "c" :| [])))
                  (SignatureNode
-                    (SignatureLeaf (TypeVarId "c"))
-                    (SignatureLeaf (TypeVarId "d"))))))
+                    (SignatureLeaf (TypeVarId "c" :| []))
+                    (SignatureLeaf (TypeVarId "d" :| []))))))

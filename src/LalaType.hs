@@ -154,7 +154,10 @@ data ExplicitShapeIdent
 -- Builds a `Tree` instance, filling `Node`s with sentinel fresh idents that
 -- should be added to the `ConstraintMap` with a function constraint.
 signatureToShape :: (SignatureToken TypeIdent) -> Tree ImplicitShapeIdent
-signatureToShape (SignatureLeaf ident) = Node (ImplicitExternalIdent ident) []
+signatureToShape (SignatureLeaf (rootIdent :| args)) =
+  Node
+    (ImplicitExternalIdent rootIdent)
+    [Node (ImplicitExternalIdent a) [] | a <- args]
 signatureToShape (SignatureNode left right) =
   Node ImplicitFunIdent (map signatureToShape [left, right])
 

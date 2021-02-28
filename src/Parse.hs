@@ -15,6 +15,7 @@ import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.BinaryTree (BinaryTree(..))
 import Data.Char
 import Data.List (elemIndex, intercalate)
+import Data.List.NonEmpty (NonEmpty(..))
 import Data.List.Split (splitOn)
 import Data.Maybe (isJust)
 import DynamicExpression
@@ -166,7 +167,6 @@ applicationExpressionP = do
 -- TypeDef parser.
 -- `Show a, Eq b => a -> b -> c`
 -- Requires further validation before being converted to a `TypeDef`.
--- TODO: SignatureTokens should allow type application (e.g. Seq a or (Seq s) => s a)
 data ParsedType a =
   ParsedType
     { constraints :: [ParsedConstraint a]
@@ -189,8 +189,15 @@ newtype TypeTag =
     }
   deriving (Eq, Show, Ord)
 
+-- | The type equation operating on type variables, without constraints.
+-- Nodes represent functions: `a -> b`.
+-- Leaves represent non-function types, including type application: `a`, `t a`.
+--
+-- Note, that the current approach doesn't handle parens in type application -
+-- `f (a -> b) (c d)` is not yet allowed.
+-- TODO: add a third enum handling type application through parens / brackets.
 data SignatureToken a
-  = SignatureLeaf a
+  = SignatureLeaf (NonEmpty a)
   | SignatureNode (SignatureToken a) (SignatureToken a)
   deriving (Eq, Show, Functor, Foldable, Traversable)
 
@@ -212,7 +219,9 @@ parsedTypeP = do
 signatureTokenP = try signatureNodeP <|> signatureLeafP
 
 -- | Single identifier.
-signatureLeafP = SignatureLeaf . TypeVarId <$> identifier
+signatureLeafP = do
+  (x:xs) <- many1 identifier
+  return (SignatureLeaf (TypeVarId <$> (x :| xs)))
 
 -- | Single pair with an arrow: `a -> b`
 -- If left side is recursive, it must be wrapped in parens,
