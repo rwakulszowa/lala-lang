@@ -19,7 +19,6 @@ import Parse
   , TypeVarId(..)
   )
 import Type (Type(..))
-import Typiara.TypeDef (TypeDef(..))
 
 t' :: Tree Char -> Map Char TypeTag -> LalaType
 t' s c = either error id (lalaType s c)

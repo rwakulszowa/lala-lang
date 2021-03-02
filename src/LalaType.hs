@@ -15,7 +15,7 @@ module LalaType
   , MergeError
   , ApplyError
   , decompose
-  , apply
+  , LalaType.apply
   ) where
 
 import qualified Data.List as List
@@ -23,7 +23,6 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import qualified Data.Tree as Tree
 import qualified Typiara.TypeEnv as TypeEnv
-import qualified Typiara.TypeTree as TypeTree
 
 import Control.Monad ((>=>))
 import Data.List.NonEmpty (NonEmpty(..))
@@ -34,19 +33,11 @@ import Data.Bifunctor (first, second)
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Tree (Tree(..))
+import Typiara (apply)
 import Typiara.Data.Tagged (Tagged(..))
 import Typiara.FT (FT(..))
-import Typiara.Infer.Expression
-  ( Arg(..)
-  , Expression(..)
-  , InferExpressionError
-  , Ref(..)
-  , inferExpression
-  , ref
-  )
-import Typiara.TypeDef (TypeDef(..))
+import Typiara.Infer.Expression (InferExpressionError)
 import Typiara.TypeEnv (RootOrNotRoot(..), TypeEnv(..))
-import Typiara.TypeTree (MergeErr, TypeTree)
 
 import Parse
   ( ParsedConstraint(..)
@@ -57,7 +48,6 @@ import Parse
   , parseType
   )
 import Type (Type(..))
-import qualified Typiara.Apply as Apply
 import Typiara.Utils (allStrings, fromRight)
 import Utils (fromListRejectOverlap, replaceValues)
 
@@ -180,7 +170,7 @@ refreshShapeIdents =
             (ExplicitFunIdent i) -> (v : funIdents, externalIdentMapping)
 
 newtype MergeError =
-  MergeError (TypeEnv.UnifyEnvError Type Char)
+  MergeError (TypeEnv.UnifyEnvError Char)
   deriving (Eq, Show)
 
 merge :: LalaType -> LalaType -> Either MergeError LalaType
@@ -188,19 +178,12 @@ merge (LalaType x) (LalaType y) =
   LalaType <$> first MergeError (TypeEnv.unifyEnv Root x y)
 
 newtype ApplyError =
-  ApplyError (InferExpressionError Type Char)
+  ApplyError (InferExpressionError Char)
   deriving (Eq, Show)
 
 apply :: LalaType -> LalaType -> Either ApplyError LalaType
 apply (LalaType f) (LalaType x) =
-  LalaType <$>
-  first
-    ApplyError
-    (inferExpression (Map.fromList [(f', f), (x', x)]) (applicationExpr f' x'))
-  where
-    applicationExpr f x = Expression {args = [], application = f :| [x]}
-    f' = ref "f"
-    x' = ref "x"
+  LalaType <$> first ApplyError (Typiara.apply f [x])
 
 -- TODO: use `TypeEnv.popArg`.
 decompose :: LalaType -> (String, LalaType, LalaType)

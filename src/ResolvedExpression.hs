@@ -44,6 +44,9 @@ type Ref = String
 
 -- The result of processing an `Expression`.
 -- Contains the original `Expression` and data inferred from it.
+--
+-- TODO: simplify resolution, get rid of `ProcessedExpression`, use the list monad
+-- to model lookup ambiguity. Proxy piece lookup calls through `boundRefs`.
 data ResolvedExpression =
   ResolvedExpression
     { procExpr :: ProcessedExpression

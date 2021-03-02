@@ -20,14 +20,19 @@ data Type a
   deriving (Eq, Show, Read, Ord, Functor, Foldable, Traversable, Data, Typeable)
 
 instance Typ Type where
-  unify Nil a = Right (Unified a)
+  unify Nil a = Right (UnifyResult a [])
   unify a Nil = unify Nil a
-  unify (T (CSeq a)) (T (CSeq b)) = Right (TypeVarsToUnify [(a, b)])
-  unify (F a b) (F a' b') = Right (TypeVarsToUnify [(a, a'), (b, b')])
+  unify (T (CSeq a)) (T (CSeq b)) = Right (UnifyResult (T (CSeq a)) [(a, b)])
+  unify (F a b) (F a' b')
+    | a == b || a' == b' =
+      Right (UnifyResult (F a a) [(a, b), (a, a'), (a, b')])
+  -- ^ There is a link on either side. All variables are unified to the same ident, the result is linked.
+  unify (F a b) (F a' b') = Right (UnifyResult (F a b) [(a, a'), (b, b')])
+  -- ^ No links. Propagate pairwise, but do not introduce any links.
   unify x y =
     if x == y
-      then Right (Unified x)
-      else Left (ConflictingTypes x y)
+      then Right (UnifyResult x [])
+      else Left (ConflictingTypes (tag x) (tag y))
 
 instance (Data a) => Tagged Type a where
   tag = show . toConstr
