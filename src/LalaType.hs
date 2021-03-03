@@ -15,6 +15,7 @@ module LalaType
   , MergeError
   , ApplyError
   , decompose
+  , refresh
   , LalaType.apply
   ) where
 
@@ -118,6 +119,8 @@ fromParsedType' (ParsedType constraints signature) = do
         (fromListRejectOverlap [(cT, cId) | (ParsedConstraint cId cT) <- cs])
 
 fromString = parseType >=> fromParsedType
+
+refresh = LalaType . TypeEnv.refreshTypeEnv . un
 
 -- Each `ImplicitFunIdent` will be mapped to a new, unique `TypeIdent`. Not usable in `Map`s.
 data ImplicitShapeIdent
