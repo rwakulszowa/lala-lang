@@ -1,5 +1,6 @@
 module DynamicExpression
   ( DynamicExpression(..)
+  , DynamicExpressionLeaf
   , intoImplExpr
   ) where
 
@@ -16,7 +17,9 @@ import Expression
 -- Represents function application of references and literals.
 --
 -- Only external references are allowed, hence `String` instead of `Ref`.
-type DynamicExpression = BinaryTree (Either Literal String)
+type DynamicExpressionLeaf = Either Literal String
+
+type DynamicExpression = BinaryTree DynamicExpressionLeaf
 
 intoImplExpr :: DynamicExpression -> ImplementationExpression
 intoImplExpr = fmap f
