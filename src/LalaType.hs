@@ -56,7 +56,23 @@ import Utils (fromListRejectOverlap, replaceValues)
 -- Serves as an interface to the type checking world implemented by `Typiara`.
 newtype LalaType =
   LalaType (TypeEnv Type Char)
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Ord)
+
+instance Show LalaType where
+  show (LalaType te) =
+    let (shape, constraints) = TypeEnv.decompose te
+     in "LalaType " ++
+        wrapParens (showMap constraints ++ " => " ++ showTagTree shape)
+    where
+      wrapParens s = "(" ++ s ++ ")"
+      showMap :: Map.Map Int String -> String
+      showMap m =
+        List.intercalate
+          ", "
+          [tag ++ " " ++ show var | (var, tag) <- Map.assocs m]
+      showTagTree (Node x []) = show x
+      showTagTree (Node x cs) =
+        wrapParens (unwords (show x : (showTagTree <$> cs)))
 
 un (LalaType x) = x
 

@@ -25,6 +25,26 @@ t' s c = either error id (lalaType s c)
 
 spec :: Spec
 spec = do
+  describe "show" $ do
+    it "singleton" $
+      show (t' (Node 'a' []) [('a', TypeTag "CNum")]) `shouldBe`
+      "LalaType (T.CNum 0 => 0)"
+    it "linked function" $
+      show
+        (t'
+           (Node 'a' [Node 'b' [], Node 'b' []])
+           [('a', TypeTag "F"), ('b', TypeTag "CNum")]) `shouldBe`
+      "LalaType (F 0, T.CNum 1 => (0 1 1))"
+    it "nested" $
+      show
+        (t'
+           (Node 'a' [Node 'b' [Node 'c' []], Node 'd' []])
+           [ ('a', TypeTag "F")
+           , ('b', TypeTag "CSeq")
+           , ('c', TypeTag "Nil")
+           , ('d', TypeTag "CNum")
+           ]) `shouldBe`
+      "LalaType (F 0, T.CSeq 1, Nil 2, T.CNum 3 => (0 (1 2) 3))"
   describe "fromParsedType" $ do
     it "singleton" $
       fromParsedType
