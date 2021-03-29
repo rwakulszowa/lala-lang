@@ -1,18 +1,17 @@
 {-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module TranspileSpec
   ( spec
   ) where
 
-import Expression
-import Lang
-import Parse
-import ProcessedExpression
-import Test.Hspec
-import TestingUtils
-import Text.RawString.QQ
-import Transpile
+import           Expression
+import           Lang
+import           Parse
+import           ProcessedExpression
+import           Test.Hspec
+import           TestingUtils
+import           Text.RawString.QQ
+import           Transpile
 
 spec :: Spec
 spec = do

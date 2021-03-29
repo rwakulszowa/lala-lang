@@ -2,8 +2,8 @@ module Data.BiDiEqMapSpec
   ( spec
   ) where
 
-import Data.BiDiEqMap
-import Test.Hspec
+import           Data.BiDiEqMap
+import           Test.Hspec
 
 spec :: Spec
 spec = do

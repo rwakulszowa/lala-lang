@@ -1,6 +1,6 @@
 module Types where
 
-import Data.Map.Strict
+import           Data.Map.Strict
 
 type Ident = String
 

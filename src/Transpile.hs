@@ -11,19 +11,19 @@ module Transpile
   , bind
   ) where
 
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import qualified Data.Map.Strict     as Map
+import qualified Data.Set            as Set
 import qualified ProcessedExpression
 
-import Data.BinaryTree (BinaryTree(..))
-import Data.List (intercalate)
-import Expression
-import Impl
-import Lang
-import Parse
-import PieceOfLogic
-import ProcessedExpression (ProcessedExpression)
-import Types
+import           Data.BinaryTree     (BinaryTree (..))
+import           Data.List           (intercalate)
+import           Expression
+import           Impl
+import           Lang
+import           Parse
+import           PieceOfLogic
+import           ProcessedExpression (ProcessedExpression)
+import           Types
 
 -- FIXME: Either String String
 impl2Src :: Lang -> String -> Impl -> String
@@ -74,10 +74,8 @@ transpileExpression lang treeId expr =
 
 -- | Transpile an expression into a string, without binding it to an id.
 transpileTo :: Lang -> Expression -> String
-transpileTo lang = transpileTo' lang
-
-transpileTo' Py = expr2Py
-transpileTo' Js = expr2Js
+transpileTo Py = expr2Py
+transpileTo Js = expr2Js
 
 expr2Py :: Expression -> String
 expr2Py (FunctionExpression args impl) =
@@ -92,7 +90,7 @@ expr2Js (ImplementationExpression impl) =
   inlineSrcToStr $ JsLiteral (impl2Js impl)
 
 mapAllButFirst :: (a -> a) -> [a] -> [a]
-mapAllButFirst f (x:xs) = (x : map f xs)
+mapAllButFirst f (x:xs) = x : map f xs
 
 -- Py
 literal2Py :: Literal -> String
@@ -144,7 +142,7 @@ expr2Lala expr =
 
 bind :: Lang -> String -> String -> String
 bind Js ident impl = "const " ++ ident ++ " = " ++ impl
-bind _ ident impl = ident ++ " = " ++ impl
+bind _ ident impl  = ident ++ " = " ++ impl
 
 wrap :: String -> String -> String -> String
 wrap open close base = open ++ base ++ close

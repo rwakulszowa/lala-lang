@@ -11,33 +11,30 @@ module Parse
   , SignatureToken(..)
   ) where
 
-import Data.BinaryTree (BinaryTree(..))
-import Data.Char
-import Data.List (elemIndex, intercalate)
-import Data.List.NonEmpty (NonEmpty(..))
-import Data.List.Split (splitOn)
-import Data.Maybe (isJust)
-import DynamicExpression
-import Expression
-  ( Expression(..)
-  , ImplExprLeaf(..)
-  , ImplementationExpression(..)
-  , Literal(..)
-  , Ref(..)
-  )
-import Types
+import           Data.BinaryTree                        (BinaryTree (..))
+import           Data.Char
+import           Data.List                              (elemIndex, intercalate)
+import           Data.List.NonEmpty                     (NonEmpty (..))
+import           Data.List.Split                        (splitOn)
+import           Data.Maybe                             (isJust)
+import           DynamicExpression
+import           Expression                             (Expression (..),
+                                                         ImplExprLeaf (..),
+                                                         ImplementationExpression (..),
+                                                         Literal (..), Ref (..))
+import           Types
 
-import Control.Monad
-import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Expr
-import Text.ParserCombinators.Parsec.Language
-import qualified Text.ParserCombinators.Parsec.Token as Token
+import           Control.Monad
+import           Text.ParserCombinators.Parsec
+import           Text.ParserCombinators.Parsec.Expr
+import           Text.ParserCombinators.Parsec.Language
+import qualified Text.ParserCombinators.Parsec.Token    as Token
 
 -- parser boilerplate
 wrapParser parser src =
   case parse (standalone parser) "" src of
     Right expr -> Right expr
-    Left err -> Left $ show err
+    Left err   -> Left $ show err
 
 parseDynamicExpression :: String -> Either String DynamicExpression
 parseDynamicExpression = wrapParser dynamicExprP
@@ -122,7 +119,7 @@ intLiteralP = do
 
 signMultiplier :: Num n => Maybe Char -> n
 signMultiplier (Just m) = -1
-signMultiplier Nothing = 1
+signMultiplier Nothing  = 1
 
 strLiteralP = StrLiteral <$> stringLiteral
 
@@ -135,8 +132,7 @@ functionExpressionP :: Parser Expression
 functionExpressionP = do
   args <- many1 identifier
   reservedOp "->"
-  impl <- implementationExpressionP
-  return $ FunctionExpression args impl
+  FunctionExpression args <$> implementationExpressionP
 
 -- | For simplicity, each application expression has to be wrapped in parens.
 -- This approach makes parsing the tree much simpler.
@@ -160,8 +156,7 @@ refExpressionP =
 applicationExpressionP :: Parser ImplementationExpression
 applicationExpressionP = do
   fun <- implementationExpressionP
-  arg <- implementationExpressionP
-  return $ Node fun arg
+  Node fun <$> implementationExpressionP
 
 -- TypeDef parser.
 -- `Show a, Eq b => a -> b -> c`
@@ -169,7 +164,7 @@ applicationExpressionP = do
 data ParsedType a =
   ParsedType
     { constraints :: [ParsedConstraint a]
-    , signature :: SignatureToken a
+    , signature   :: SignatureToken a
     }
   deriving (Eq, Show, Functor, Foldable, Traversable)
 
@@ -204,7 +199,7 @@ data SignatureToken a
 data ParsedConstraint a =
   ParsedConstraint
     { constraintId :: TypeTag
-    , typeParam :: a
+    , typeParam    :: a
     }
   deriving (Eq, Show, Functor, Foldable, Traversable)
 
@@ -229,8 +224,7 @@ signatureLeafP = do
 signatureNodeP = do
   left <- parens signatureTokenP <|> signatureLeafP
   reservedOp "->"
-  right <- signatureTokenP -- Right side parens are forbidden.
-  return $ SignatureNode left right
+  SignatureNode left <$> signatureTokenP
 
 parsedConstraintP :: Parser (ParsedConstraint TypeVarId)
 parsedConstraintP = do

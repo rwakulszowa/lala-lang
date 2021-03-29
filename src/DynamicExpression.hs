@@ -4,14 +4,10 @@ module DynamicExpression
   , intoImplExpr
   ) where
 
-import Data.BinaryTree (BinaryTree(..))
-import Expression
-  ( Expression(..)
-  , ImplExprLeaf(..)
-  , ImplementationExpression(..)
-  , Literal(..)
-  , Ref(..)
-  )
+import           Data.BinaryTree (BinaryTree (..))
+import           Expression      (Expression (..), ImplExprLeaf (..),
+                                  ImplementationExpression (..), Literal (..),
+                                  Ref (..))
 
 -- | An expression usable in the dynamic phase of the program.
 -- Represents function application of references and literals.
@@ -24,5 +20,5 @@ type DynamicExpression = BinaryTree DynamicExpressionLeaf
 intoImplExpr :: DynamicExpression -> ImplementationExpression
 intoImplExpr = fmap f
   where
-    f (Left lit) = ImplExprLit lit
+    f (Left lit)  = ImplExprLit lit
     f (Right ref) = ImplExprRef (ExternalRef ref)

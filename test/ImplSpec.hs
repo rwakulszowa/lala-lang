@@ -4,11 +4,11 @@ module ImplSpec
   ( spec
   ) where
 
-import Impl
-import Test.Hspec
-import Text.RawString.QQ
+import           Impl
+import           Test.Hspec
+import           Text.RawString.QQ
 
-import TestingUtils (parseTypeOrDie)
+import           TestingUtils      (parseTypeOrDie)
 
 spec :: Spec
 spec =

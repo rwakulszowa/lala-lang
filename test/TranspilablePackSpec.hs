@@ -1,23 +1,24 @@
-{-# LANGUAGE QuasiQuotes, OverloadedLists #-}
+{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE QuasiQuotes     #-}
 
 module TranspilablePackSpec
   ( spec
   ) where
 
-import Assembly
-import Data.BinaryTree
-import Data.Either (isLeft)
-import Data.Map.Strict
-import Expression (Literal(..))
-import Impl
-import Lang (Lang(..))
-import Parse (parseExpression)
-import PieceOfLogic
-import ProcessedExpression
-import Test.Hspec
-import TestingUtils
-import Text.RawString.QQ
-import TranspilablePack
+import           Assembly
+import           Data.BinaryTree
+import           Data.Either         (isLeft)
+import           Data.Map.Strict
+import           Expression          (Literal (..))
+import           Impl
+import           Lang                (Lang (..))
+import           Parse               (parseExpression)
+import           PieceOfLogic
+import           ProcessedExpression
+import           Test.Hspec
+import           TestingUtils
+import           Text.RawString.QQ
+import           TranspilablePack
 
 addImplPy =
   ImplPiece $
@@ -29,13 +30,13 @@ addImplJs =
 
 incImpl =
   ExprPiece
-    ((fromExpression (parseExpressionOrDie "x -> ((Add 1) x)") incTypeDef))
+    (fromExpression (parseExpressionOrDie "x -> ((Add 1) x)") incTypeDef)
 
 applyImpl =
   ExprPiece
-    ((fromExpression
-        (parseExpressionOrDie "fun arg -> (fun arg)")
-        (parseTypeOrDie "Nil a, Nil b => (a -> b) -> a -> b")))
+    (fromExpression
+       (parseExpressionOrDie "fun arg -> (fun arg)")
+       (parseTypeOrDie "Nil a, Nil b => (a -> b) -> a -> b"))
 
 spec :: Spec
 spec =
@@ -45,8 +46,8 @@ spec =
         transpilePack
           ([("Add", [addImplPy])] !)
           (TranspilablePack
-             (((Leaf $ Right $ "Add") `Node` (Leaf $ Left $ IntLiteral 1)) `Node`
-              (Leaf $ Left $ IntLiteral 1))
+             ((Leaf (Right "Add") `Node` Leaf (Left $ IntLiteral 1)) `Node`
+              Leaf (Left $ IntLiteral 1))
              Py
              "a.py") `shouldBe`
         Right
@@ -62,7 +63,7 @@ ret = Ret|]
         transpilePack
           ([("Add", [addImplPy]), ("Inc", [incImpl])] !)
           (TranspilablePack
-             ((Leaf $ Right $ "Inc") `Node` (Leaf $ Left $ IntLiteral 1))
+             (Leaf (Right "Inc") `Node` Leaf (Left $ IntLiteral 1))
              Py
              "a.py") `shouldBe`
         Right
@@ -80,8 +81,8 @@ ret = Ret|]
         transpilePack
           ([("Add", [addImplPy]), ("Inc", [incImpl])] !)
           (TranspilablePack
-             (((Leaf $ Right $ "Add") `Node` (Leaf $ Left $ IntLiteral 2)) `Node`
-              ((Leaf $ Right $ "Inc") `Node` (Leaf $ Left $ IntLiteral 1)))
+             ((Leaf (Right "Add") `Node` Leaf (Left $ IntLiteral 2)) `Node`
+              (Leaf (Right "Inc") `Node` Leaf (Left $ IntLiteral 1)))
              Py
              "a.py") `shouldBe`
         Right
@@ -99,8 +100,8 @@ ret = Ret|]
         transpilePack
           ([("Add", [addImplPy]), ("Inc", [incImpl]), ("Apply", [applyImpl])] !)
           (TranspilablePack
-             (((Leaf $ Right $ "Apply") `Node` (Leaf $ Right $ "Inc")) `Node`
-              (Leaf $ Left $ IntLiteral 1))
+             ((Leaf (Right "Apply") `Node` Leaf (Right "Inc")) `Node`
+              Leaf (Left $ IntLiteral 1))
              Py
              "a.py") `shouldBe`
         Right
@@ -138,7 +139,7 @@ ret = Ret|]
                ])
            ] !)
           (TranspilablePack
-             ((Leaf $ Right $ "Imported") `Node` (Leaf $ Left $ IntLiteral 1))
+             (Leaf (Right "Imported") `Node` Leaf (Left $ IntLiteral 1))
              Py
              "a.py") `shouldBe`
         Right
@@ -155,8 +156,8 @@ ret = Ret|]
       transpilePack
         ([("Add", [addImplJs])] !)
         (TranspilablePack
-           (((Leaf $ Right $ "Add") `Node` (Leaf $ Left $ IntLiteral 1)) `Node`
-            (Leaf $ Left $ IntLiteral 1))
+           ((Leaf (Right "Add") `Node` Leaf (Left $ IntLiteral 1)) `Node`
+            Leaf (Left $ IntLiteral 1))
            Js
            "lib.mjs") `shouldBe`
       Right

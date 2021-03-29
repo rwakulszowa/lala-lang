@@ -5,8 +5,8 @@ module Assembly
 
 import qualified Impl
 import qualified Lang
-import PieceOfLogic (PieceOfLogic)
-import Transpile (bind, dumpLogic)
+import           PieceOfLogic (PieceOfLogic)
+import           Transpile    (bind, dumpLogic)
 
 data Assembly
     -- | Single file result.
@@ -14,7 +14,7 @@ data Assembly
       =
   InlineAssembly
     { content :: String
-    , lang :: Lang.Lang
+    , lang    :: Lang.Lang
     }
   deriving (Show, Eq)
 

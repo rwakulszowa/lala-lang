@@ -1,6 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections       #-}
 
 module TypeCheck
   ( typeCheckExpression
@@ -11,23 +10,23 @@ module TypeCheck
   , TypeCheckResolvedExpressionError(..)
   ) where
 
-import Control.Monad (foldM, liftM)
-import Data.Bifunctor (bimap, first)
-import Data.BinaryTree (BinaryTree(..))
-import Data.Bitraversable (bisequence)
-import Data.Char (isLower)
-import Data.Either (fromRight)
-import Data.Map (Map, (!?))
-import Data.Maybe (fromJust, mapMaybe)
-import Data.Set (Set)
+import           Control.Monad        (foldM, liftM)
+import           Data.Bifunctor       (bimap, first)
+import           Data.BinaryTree      (BinaryTree (..))
+import           Data.Bitraversable   (bisequence)
+import           Data.Char            (isLower)
+import           Data.Either          (fromRight)
+import           Data.Map             (Map, (!?))
+import           Data.Maybe           (fromJust, mapMaybe)
+import           Data.Set             (Set)
 
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
-import qualified Data.Tree as Tree
+import qualified Data.Map.Strict      as Map
+import qualified Data.Set             as Set
+import qualified Data.Tree            as Tree
 
-import LalaType (ApplyError, LalaType, MergeError)
+import           LalaType             (ApplyError, LalaType, MergeError)
 
-import qualified Data.BiDiEqMap as BiDiEqMap
+import qualified Data.BiDiEqMap       as BiDiEqMap
 import qualified Data.DependencyGraph as DependencyGraph
 import qualified Impl
 import qualified LalaType
@@ -35,20 +34,17 @@ import qualified PieceOfLogic
 import qualified ProcessedExpression
 import qualified Utils
 
-import Data.BiDiEqMap (BiDiEqMap)
-import Data.DependencyGraph (DependencyGraph(..), DependencyGraphError(..))
-import Expression
-  ( Expression(..)
-  , ImplExprLeaf(..)
-  , ImplementationExpression(..)
-  , Literal(..)
-  , Ref(..)
-  )
-import Impl (Impl(..))
-import PieceOfLogic (PieceOfLogic(..))
-import ProcessedExpression (ProcessedExpression)
-import Type (Type(..))
-import Typiara.FT (FT(..))
+import           Data.BiDiEqMap       (BiDiEqMap)
+import           Data.DependencyGraph (DependencyGraph (..),
+                                       DependencyGraphError (..))
+import           Expression           (Expression (..), ImplExprLeaf (..),
+                                       ImplementationExpression (..),
+                                       Literal (..), Ref (..))
+import           Impl                 (Impl (..))
+import           PieceOfLogic         (PieceOfLogic (..))
+import           ProcessedExpression  (ProcessedExpression)
+import           Type                 (Type (..))
+import           Typiara.FT           (FT (..))
 
 -- | External references (e.g. injected `Impl`s) are looked up, rather than
 -- resolved recursively.
@@ -69,11 +65,11 @@ data TypeCheckError
   = RefLookupError Ref
   | MergeError
       { expr :: ImplementationExpression
-      , err :: MergeError
+      , err  :: MergeError
       }
   | WrongArity
       { args :: [String]
-      , tt :: LalaType
+      , tt   :: LalaType
       }
   | ApplyError ApplyError
   deriving (Eq, Show)
@@ -96,11 +92,11 @@ popArgsFromType ::
           -- Fails if the tree doesn't have enough arguments.
 popArgsFromType [] t = Right ([], t)
 popArgsFromType (a:as) t =
-  case (LalaType.decompose t) of
+  case LalaType.decompose t of
     ("F", arg, ret) -> do
       (recArgs, recRet) <- popArgsFromType as ret
-      return $ ((a, arg) : recArgs, recRet)
-    otherwise -> Left ((a : as), t)
+      return ((a, arg) : recArgs, recRet)
+    _ -> Left (a : as, t)
 
 -- | Look up references, infer literals, reduce applications.
 typeCheckImplExpr ::
@@ -120,7 +116,7 @@ typeCheckImplExpr lookup typ expr =
 -- TLDR: `ImplementationExpression`s are inferred, everything above them is
 -- type checked.
 inferImplExpr ::
-     RefLookupF -> ImplementationExpression -> Either TypeCheckError (LalaType)
+     RefLookupF -> ImplementationExpression -> Either TypeCheckError LalaType
 inferImplExpr lookup (Leaf (ImplExprLit literal)) =
   Right (LalaType.singleton (inferLiteral literal))
 inferImplExpr lookup (Leaf (ImplExprRef ref)) = lookup ref
@@ -183,7 +179,7 @@ data RootOrNotRoot a
   | NotRoot a
   deriving (Eq, Show, Ord)
 
-unwrapRootOrNotRoot Root = Left RootUnwrap
+unwrapRootOrNotRoot Root        = Left RootUnwrap
 unwrapRootOrNotRoot (NotRoot a) = Right a
 
 data TypeCheckResolvedExpressionError
@@ -191,7 +187,7 @@ data TypeCheckResolvedExpressionError
   | DependencyGraphError (DependencyGraphError (RootOrNotRoot String))
   | DependencyCycle [String]
   | LookupFailure String
-  | InvalidTypeDef (String)
+  | InvalidTypeDef String
   deriving (Eq, Show)
 
 data DigDepsError
@@ -201,7 +197,7 @@ data DigDepsError
 
 fromDigDepsError :: DigDepsError -> TypeCheckResolvedExpressionError
 fromDigDepsError (DigDepsLookupFailure x) = LookupFailure x
-fromDigDepsError (DigDepsCycle x) = DependencyCycle x
+fromDigDepsError (DigDepsCycle x)         = DependencyCycle x
 
 data TypeCheckOnePieceError
   = TypeCheckPieceError TypeCheckPieceError
@@ -273,14 +269,14 @@ typeCheckResolvedExpression l e =
       typeLookup <-
         first InvalidTypeDef . traverse (pure . PieceOfLogic.getType) $ l
       _ <-
-        (Utils.mapLeft
-           DependencyGraphError
-           (DependencyGraph.traverseAccum (typeCheckPiece' typeLookup l r) dg) >>=
-         Utils.mapLeft TypeCheckOnePieceError . sequence)
+        Utils.mapLeft
+          DependencyGraphError
+          (DependencyGraph.traverseAccum (typeCheckPiece' typeLookup l r) dg) >>=
+        Utils.mapLeft TypeCheckOnePieceError . sequence
       return ()
       where
         typeCheckPiece' typeLookup nonRootLookup rootExpr pieceId recResults = do
-          sequence recResults
+          sequence_ recResults
           piece <- resolvePiece rootExpr pieceId nonRootLookup
           -- ^ Propagate child failures.
           first TypeCheckPieceError $ typeCheckPiece typeLookup piece

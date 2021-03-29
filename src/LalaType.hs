@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 -- | This file is the main interface to the `Typiara` world.
 -- Other modules should not import `Typiara` directly (with a few, minor
@@ -19,38 +19,34 @@ module LalaType
   , LalaType.apply
   ) where
 
-import qualified Data.List as List
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
-import qualified Data.Tree as Tree
-import qualified Typiara.TypeEnv as TypeEnv
+import qualified Data.List                as List
+import qualified Data.Map.Strict          as Map
+import qualified Data.Set                 as Set
+import qualified Data.Tree                as Tree
+import qualified Typiara.TypeEnv          as TypeEnv
 
-import Control.Monad ((>=>))
-import Data.List.NonEmpty (NonEmpty(..))
-import Data.Traversable (mapAccumL)
-import Text.Read (readMaybe)
+import           Control.Monad            ((>=>))
+import           Data.List.NonEmpty       (NonEmpty (..))
+import           Data.Traversable         (mapAccumL)
+import           Text.Read                (readMaybe)
 
-import Data.Bifunctor (first, second)
-import Data.Map (Map)
-import Data.Set (Set)
-import Data.Tree (Tree(..))
-import Typiara (apply)
-import Typiara.Data.Tagged (Tagged(..))
-import Typiara.FT (FT(..))
-import Typiara.Infer.Expression (InferExpressionError)
-import Typiara.TypeEnv (RootOrNotRoot(..), TypeEnv(..))
+import           Data.Bifunctor           (first, second)
+import           Data.Map                 (Map)
+import           Data.Set                 (Set)
+import           Data.Tree                (Tree (..))
+import           Typiara                  (apply)
+import           Typiara.Data.Tagged      (Tagged (..))
+import           Typiara.FT               (FT (..))
+import           Typiara.Infer.Expression (InferExpressionError)
+import           Typiara.TypeEnv          (RootOrNotRoot (..), TypeEnv (..))
 
-import Parse
-  ( ParsedConstraint(..)
-  , ParsedType(..)
-  , SignatureToken(..)
-  , TypeTag(..)
-  , TypeVarId(..)
-  , parseType
-  )
-import Type (Type(..))
-import Typiara.Utils (allStrings, fromRight)
-import Utils (fromListRejectOverlap, replaceValues)
+import           Parse                    (ParsedConstraint (..),
+                                           ParsedType (..), SignatureToken (..),
+                                           TypeTag (..), TypeVarId (..),
+                                           parseType)
+import           Type                     (Type (..))
+import           Typiara.Utils            (allStrings, fromRight)
+import           Utils                    (fromListRejectOverlap, replaceValues)
 
 -- A result of processing a raw `ParsedType`.
 -- Serves as an interface to the type checking world implemented by `Typiara`.
@@ -85,14 +81,14 @@ type ConstraintMap = Map TypeIdent TypeTag
 lalaType :: Tree TypeIdent -> ConstraintMap -> Either String LalaType
 lalaType shape constraints =
   LalaType <$>
-  (first show $ TypeEnv.fromEnumTree shape (mapTypeTag <$> constraints))
+  first show (TypeEnv.fromEnumTree shape (mapTypeTag <$> constraints))
   where
     mapTypeTag :: TypeTag -> String
           -- ^ unwrap a TypeTag and convert it to a `Tagged` representation.
           -- `Nil` and `F` are base variants. Custom types are prefixed with `T`.
     mapTypeTag (TypeTag "Nil") = "Nil"
-    mapTypeTag (TypeTag "F") = "F"
-    mapTypeTag (TypeTag t) = "T." ++ t
+    mapTypeTag (TypeTag "F")   = "F"
+    mapTypeTag (TypeTag t)     = "T." ++ t
 
 -- | Reverse of `lalaType`.
 unLalaType :: LalaType -> (Tree TypeIdent, ConstraintMap)
@@ -101,17 +97,17 @@ unLalaType = second (fmap unpackTypeTag) . TypeEnv.decompose . un
     unpackTypeTag :: String -> TypeTag
           -- ^ Dual to `mapTypeTag` above.
     unpackTypeTag ('T':'.':t) = TypeTag t
-    unpackTypeTag t = TypeTag t
+    unpackTypeTag t           = TypeTag t
 
 singleton = LalaType . TypeEnv.singleton
 
 -- `ParsedType` infers shape from the input string, but doesn't perform any
 -- logic on the values.
 -- This function enforces that the content is legit.
-fromParsedType :: (ParsedType TypeVarId) -> Either String LalaType
+fromParsedType :: ParsedType TypeVarId -> Either String LalaType
 fromParsedType = fromParsedType' . snd . replaceValues ['a' ..]
 
-fromParsedType' :: (ParsedType Char) -> Either String LalaType
+fromParsedType' :: ParsedType Char -> Either String LalaType
 fromParsedType' (ParsedType constraints signature) = do
   let ((funIdents, externalIdentDiff), signatureShape) =
         refreshShapeIdents . signatureToShape $ signature
@@ -153,7 +149,7 @@ data ExplicitShapeIdent
 
 -- Builds a `Tree` instance, filling `Node`s with sentinel fresh idents that
 -- should be added to the `ConstraintMap` with a function constraint.
-signatureToShape :: (SignatureToken TypeIdent) -> Tree ImplicitShapeIdent
+signatureToShape :: SignatureToken TypeIdent -> Tree ImplicitShapeIdent
 signatureToShape (SignatureLeaf (rootIdent :| args)) =
   Node
     (ImplicitExternalIdent rootIdent)

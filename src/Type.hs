@@ -1,14 +1,17 @@
-{-# LANGUAGE DeriveTraversable, DeriveDataTypeable,
-  MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveTraversable     #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Type
   ( Type(..)
   ) where
 
-import Data.Data (Data, Typeable, toConstr)
-import Typiara.Data.Tagged (Tagged(..))
-import Typiara.FT (FT(..))
-import Typiara.Typ (Typ(..), UnifyError(..), UnifyResult(..))
+import           Data.Data           (Data, Typeable, toConstr)
+import           Typiara.Data.Tagged (Tagged (..))
+import           Typiara.FT          (FT (..))
+import           Typiara.Typ         (Typ (..), UnifyError (..),
+                                      UnifyResult (..))
 
 -- A simple set of types.
 -- Prefixed with "C" to avoid clashes with Haskell.
@@ -30,7 +33,7 @@ instance (Data a) => Tagged Type a where
   tag = show . toConstr
   -- TODO: try to reuse the magic `gunfold` function from `Data.Data`.
   fromTag "CBool" [] = Just CBool
-  fromTag "CNum" [] = Just CNum
-  fromTag "CStr" [] = Just CStr
+  fromTag "CNum" []  = Just CNum
+  fromTag "CStr" []  = Just CStr
   fromTag "CSeq" [a] = Just (CSeq a)
-  fromTag _ _ = Nothing
+  fromTag _ _        = Nothing

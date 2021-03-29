@@ -2,12 +2,12 @@ module ParseSpec
   ( spec
   ) where
 
-import Data.BinaryTree
-import Data.Either (isLeft)
-import Data.List.NonEmpty
-import Expression
-import Parse
-import Test.Hspec
+import           Data.BinaryTree
+import           Data.Either        (isLeft)
+import           Data.List.NonEmpty
+import           Expression
+import           Parse
+import           Test.Hspec
 
 spec :: Spec
 spec = do

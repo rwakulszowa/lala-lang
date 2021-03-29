@@ -2,8 +2,8 @@ module Data.BinaryTreeSpec
   ( spec
   ) where
 
-import Data.BinaryTree
-import Test.Hspec
+import           Data.BinaryTree
+import           Test.Hspec
 
 spec :: Spec
 spec = do
@@ -18,9 +18,9 @@ spec = do
   describe "unPreOrder" $ do
     it "simple" $ do
       let l = [Nothing, Just 'a', Just 'b']
-      unPreOrder l `shouldBe` (Node (Leaf 'a') (Leaf 'b'))
+      unPreOrder l `shouldBe` Node (Leaf 'a') (Leaf 'b')
     it "nested" $ do
       let l =
             [Nothing, Nothing, Just 'a', Nothing, Just 'b', Just 'c', Just 'd']
       unPreOrder l `shouldBe`
-        (Node (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c'))) (Leaf 'd'))
+        Node (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c'))) (Leaf 'd')

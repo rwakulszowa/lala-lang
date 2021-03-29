@@ -15,8 +15,8 @@ module Expression
   , fmapExternalRefs
   ) where
 
-import Data.BinaryTree (BinaryTree(..))
-import qualified Data.Set as Set
+import           Data.BinaryTree (BinaryTree (..))
+import qualified Data.Set        as Set
 
 type ArgId = String
 
@@ -78,13 +78,13 @@ externalRef = Leaf . ImplExprRef . ExternalRef
 digExternalRefs :: Expression -> [String]
 digExternalRefs expr =
   case expr of
-    (FunctionExpression _ impl) -> go impl
+    (FunctionExpression _ impl)     -> go impl
     (ImplementationExpression impl) -> go impl
   where
     go (Leaf (ImplExprRef (ExternalRef ref))) = [ref]
-    go (Leaf (ImplExprRef (LocalRef _))) = []
-    go (Leaf (ImplExprLit _)) = []
-    go (Node fun arg) = concatMap go [fun, arg]
+    go (Leaf (ImplExprRef (LocalRef _)))      = []
+    go (Leaf (ImplExprLit _))                 = []
+    go (Node fun arg)                         = concatMap go [fun, arg]
 
 -- | Apply `args` to `fun`, producing a composite `ImplementationExpression`.
 -- `FunctionExpression`s are not allowed, for simplicity. Functions should be injected as `ImplExprRef`s.
@@ -92,7 +92,7 @@ applicationExpression ::
      ImplementationExpression
   -> [ImplementationExpression]
   -> ImplementationExpression
-applicationExpression fun args = foldl (\f a -> Node f a) fun args
+applicationExpression = foldl Node
 
 -- | fmap `ExternalRef`s.
 -- `ExternalRef`s are the only bit of an `Expression` that communicates with
@@ -112,5 +112,5 @@ fmapExternalRefs f expr =
   where
     goImplExpr f (Node fun arg) = Node (goImplExpr f fun) (goImplExpr f arg)
     goImplExpr f (Leaf (ImplExprRef (ExternalRef ref))) =
-      (Leaf (ImplExprRef (ExternalRef (f ref))))
+      Leaf (ImplExprRef (ExternalRef (f ref)))
     goImplExpr _ implExpr = implExpr

@@ -2,10 +2,10 @@ module ExpressionSpec
   ( spec
   ) where
 
-import Data.BinaryTree
-import Data.Char (toUpper)
-import Expression
-import Test.Hspec
+import           Data.BinaryTree
+import           Data.Char       (toUpper)
+import           Expression
+import           Test.Hspec
 
 spec :: Spec
 spec = do
@@ -34,13 +34,13 @@ spec = do
       let f = externalRef "f"
       let a = externalRef "a"
       let b = externalRef "b"
-      applicationExpression f [a, b] `shouldBe` (Node (Node f a) b)
+      applicationExpression f [a, b] `shouldBe` Node (Node f a) b
   describe "fmapExternalRefs" $ do
     let up = map toUpper
     it "singleton" $
-      (up `fmapExternalRefs` (ImplementationExpression (externalRef "x"))) `shouldBe`
-      (ImplementationExpression (externalRef "X"))
+      (up `fmapExternalRefs` ImplementationExpression (externalRef "x")) `shouldBe`
+      ImplementationExpression (externalRef "X")
     it "Node" $
       (up `fmapExternalRefs`
-       (ImplementationExpression (Node (externalRef "f") (localRef "a")))) `shouldBe`
-      (ImplementationExpression (Node (externalRef "F") (localRef "a")))
+       ImplementationExpression (Node (externalRef "f") (localRef "a"))) `shouldBe`
+      ImplementationExpression (Node (externalRef "F") (localRef "a"))

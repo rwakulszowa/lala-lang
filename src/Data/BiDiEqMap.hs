@@ -5,8 +5,8 @@ module Data.BiDiEqMap
   , lookupByValue
   ) where
 
-import Data.Array (Array, (!), assocs, bounds, inRange, listArray)
-import Data.List (find, nub)
+import           Data.Array (Array, assocs, bounds, inRange, listArray, (!))
+import           Data.List  (find, nub)
 
 -- A Map-like structure for non-Ord keys, allowing lookup in both directions.
 -- Less performant than a proper map, of course.

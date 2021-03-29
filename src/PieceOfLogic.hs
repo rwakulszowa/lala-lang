@@ -4,11 +4,12 @@ module PieceOfLogic
   , getType
   ) where
 
-import Data.Set (Set)
-import Impl (Impl, typ)
-import LalaType
-import ProcessedExpression (ProcessedExpression, declaredType, externalRefs)
-import Type
+import           Data.Set            (Set)
+import           Impl                (Impl, typ)
+import           LalaType
+import           ProcessedExpression (ProcessedExpression, declaredType,
+                                      externalRefs)
+import           Type
 
 data PieceOfLogic
   = ImplPiece Impl
@@ -16,9 +17,9 @@ data PieceOfLogic
   deriving (Eq, Show)
 
 pieceDeps :: PieceOfLogic -> Set String
-pieceDeps (ImplPiece _) = mempty
+pieceDeps (ImplPiece _)        = mempty
 pieceDeps (ExprPiece procExpr) = externalRefs procExpr
 
 getType :: PieceOfLogic -> LalaType
-getType (ImplPiece impl) = typ impl
+getType (ImplPiece impl)     = typ impl
 getType (ExprPiece procExpr) = declaredType procExpr

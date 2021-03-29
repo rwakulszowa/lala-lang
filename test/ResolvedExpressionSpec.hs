@@ -4,15 +4,15 @@ module ResolvedExpressionSpec
   ( spec
   ) where
 
-import qualified Data.Either as Either
-import Data.Map (Map)
-import qualified Data.Map.Strict as Map
-import Impl
-import PieceOfLogic
-import ProcessedExpression
-import ResolvedExpression
-import Test.Hspec
-import TestingUtils
+import qualified Data.Either         as Either
+import           Data.Map            (Map)
+import qualified Data.Map.Strict     as Map
+import           Impl
+import           PieceOfLogic
+import           ProcessedExpression
+import           ResolvedExpression
+import           Test.Hspec
+import           TestingUtils
 
 buildLookup :: [(String, PieceOfLogic)] -> String -> [PieceOfLogic]
 buildLookup extItems k =
@@ -49,7 +49,7 @@ spec = do
       let procExpr =
             fromExpression (parseExpressionOrDie "(RefA RefB)") numTypeDef
       (unpack <$> resolvedExpression procExpr [("RefA", one)]) `shouldBe`
-        (Left $ UnboundRefs ["RefB"])
+        Left (UnboundRefs ["RefB"])
     it "conflicting types" $ do
       let procExpr =
             fromExpression (parseExpressionOrDie "(RefA RefB)") numTypeDef
@@ -98,8 +98,8 @@ spec = do
       let procExpr =
             fromExpression (parseExpressionOrDie "UnknownIdent") numTypeDef
       resolve (buildLookup [("One", one)]) procExpr `shouldBe`
-        (Left $ LookupFailed "UnknownIdent")
+        Left (LookupFailed "UnknownIdent")
     it "missing dependency" $ do
       let procExpr = fromExpression (parseExpressionOrDie "Inc") numTypeDef
       resolve (buildLookup [("Inc", inc)]) procExpr `shouldBe`
-        (Left $ LookupFailed "Add")
+        Left (LookupFailed "Add")

@@ -4,21 +4,16 @@ module LalaTypeSpec
   ( spec
   ) where
 
-import LalaType
-import Test.Hspec
+import           LalaType
+import           Test.Hspec
 
-import Data.List.NonEmpty (NonEmpty(..))
-import Data.Map (Map)
-import Data.Tree (Tree(..))
-import LalaType (LalaType(..))
-import Parse
-  ( ParsedConstraint(..)
-  , ParsedType(..)
-  , SignatureToken(..)
-  , TypeTag(..)
-  , TypeVarId(..)
-  )
-import Type (Type(..))
+import           Data.List.NonEmpty (NonEmpty (..))
+import           Data.Map           (Map)
+import           Data.Tree          (Tree (..))
+import           Parse              (ParsedConstraint (..), ParsedType (..),
+                                     SignatureToken (..), TypeTag (..),
+                                     TypeVarId (..))
+import           Type               (Type (..))
 
 t' :: Tree Char -> Map Char TypeTag -> LalaType
 t' s c = either error id (lalaType s c)

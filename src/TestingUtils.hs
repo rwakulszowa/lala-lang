@@ -1,18 +1,18 @@
 module TestingUtils where
 
-import Control.Monad ((>=>))
-import Data.Either (fromRight)
+import           Control.Monad     ((>=>))
+import           Data.Either       (fromRight)
 
 import qualified LalaType
 import qualified Parse
 
-import DynamicExpression (DynamicExpression)
-import Expression (Expression)
-import LalaType (LalaType)
-import Type
+import           DynamicExpression (DynamicExpression)
+import           Expression        (Expression)
+import           LalaType          (LalaType)
+import           Type
 
 unwrapOrDie id (Right x) = x
-unwrapOrDie id (Left e) = error (id ++ " - " ++ show e)
+unwrapOrDie id (Left e)  = error (id ++ " - " ++ show e)
 
 parseTypeOrDie :: String -> LalaType
 parseTypeOrDie =

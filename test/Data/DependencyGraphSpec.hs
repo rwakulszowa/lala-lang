@@ -4,11 +4,11 @@ module Data.DependencyGraphSpec
   ( spec
   ) where
 
-import Data.DependencyGraph
-import Test.Hspec
+import           Data.DependencyGraph
+import           Test.Hspec
 
-import Data.Map (Map, (!), (!?), insert)
-import Data.Set (Set, elems)
+import           Data.Map             (Map, insert, (!), (!?))
+import           Data.Set             (Set, elems)
 
 -- |Count of all dependencies of a given id + 1.
 -- |Sufficient to test traversal order.

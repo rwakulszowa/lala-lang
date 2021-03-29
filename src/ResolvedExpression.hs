@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections       #-}
 
 module ResolvedExpression
   ( ResolvedExpression
@@ -13,32 +13,26 @@ module ResolvedExpression
   , pieces
   ) where
 
-import qualified Data.List as List
-import qualified Data.List.NonEmpty as NonEmpty
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import qualified Data.List           as List
+import qualified Data.List.NonEmpty  as NonEmpty
+import qualified Data.Map.Strict     as Map
+import qualified Data.Set            as Set
 
 import qualified ProcessedExpression
 import qualified Utils
 
-import Data.Bifunctor (first)
-import Data.Either (rights)
-import Data.List.NonEmpty (NonEmpty(..))
-import Data.Map (Map, keys)
-import Data.Set (Set, (\\), fromList)
-import Impl
-import PieceOfLogic
-import ProcessedExpression
-  ( ProcessedExpression
-  , declaredType
-  , expr
-  , externalRefs
-  )
-import Type
-import TypeCheck
-  ( TypeCheckResolvedExpressionError(..)
-  , typeCheckResolvedExpression
-  )
+import           Data.Bifunctor      (first)
+import           Data.Either         (rights)
+import           Data.List.NonEmpty  (NonEmpty (..))
+import           Data.Map            (Map, keys)
+import           Data.Set            (Set, fromList, (\\))
+import           Impl
+import           PieceOfLogic
+import           ProcessedExpression (ProcessedExpression, declaredType, expr,
+                                      externalRefs)
+import           Type
+import           TypeCheck           (TypeCheckResolvedExpressionError (..),
+                                      typeCheckResolvedExpression)
 
 type Ref = String
 
@@ -49,7 +43,7 @@ type Ref = String
 -- to model lookup ambiguity. Proxy piece lookup calls through `boundRefs`.
 data ResolvedExpression =
   ResolvedExpression
-    { procExpr :: ProcessedExpression
+    { procExpr  :: ProcessedExpression
     , boundRefs :: Map Ref PieceOfLogic
     }
   deriving (Show, Eq)
@@ -117,7 +111,7 @@ resolve lookup processedExpr = do
   where
     explicitlyFailingOnEmptyLookup baseLookup k =
       case lookup k of
-        [] -> Left $ LookupFailed k
+        []     -> Left $ LookupFailed k
         (x:xs) -> Right $ x :| xs
     resolvedExpression' pe br =
       Utils.mapLeft ResolvedExpressionError $ resolvedExpression pe br

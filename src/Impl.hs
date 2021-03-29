@@ -17,13 +17,13 @@ module Impl
   , toSourceCode
   ) where
 
-import Data.Bifunctor (first)
-import Data.List (intercalate)
-import Expression
-import LalaType (LalaType)
-import Lang (Lang(..), WithLang, getLang)
-import Parse (parseExpression)
-import Type
+import           Data.Bifunctor (first)
+import           Data.List      (intercalate)
+import           Expression
+import           LalaType       (LalaType)
+import           Lang           (Lang (..), WithLang, getLang)
+import           Parse          (parseExpression)
+import           Type
 
 -- An implementation of a single function.
 -- One function may have multiple `Impl`s.
@@ -61,17 +61,17 @@ data InlineSrc
   deriving (Eq, Show)
 
 instance WithLang Src where
-  getLang (InlineSrc s) = getLang s
+  getLang (InlineSrc s)     = getLang s
   getLang (StandaloneSrc s) = getLang s
 
 instance WithLang InlineSrc where
   getLang (PyLambda _ _) = Py
-  getLang (PyLiteral _) = Py
+  getLang (PyLiteral _)  = Py
   getLang (JsLambda _ _) = Js
-  getLang (JsLiteral _) = Js
+  getLang (JsLiteral _)  = Js
 
 instance WithLang StandaloneSrc where
-  getLang (PyDef _ _) = Py
+  getLang (PyDef _ _)    = Py
   getLang (PyImport _ _) = Py
 
 -- | Convenience constructors, hiding details about an item being inline or standalone.
@@ -123,15 +123,15 @@ standaloneSrcToStr name (PyDef args implLines) =
           -- ^ header of a wrapper, needed to apply an argument to the body on the first call. Arity of 0.
           body = toSourceCode handleSingle args impl
           -- ^ the actual body: curried, unapplied
-       in [noIndent topLevelHeader] ++
-          (indentBlock $
-           [noIndent wrapperHeader] ++
-           (indentBlock body) ++ [noIndent "return wrapper () (arg)"])
+       in noIndent topLevelHeader :
+          indentBlock
+            ([noIndent wrapperHeader] ++
+             indentBlock body ++ [noIndent "return wrapper () (arg)"])
       where
         handleSingle :: String -> [IndentedLine] -> [IndentedLine]
         handleSingle arg body =
           [noIndent $ header "inner" arg] ++
-          (indentBlock body) ++ [noIndent "return inner"]
+          indentBlock body ++ [noIndent "return inner"]
         header :: String -> String -> String
         header funName argId = "def " ++ funName ++ "(" ++ argId ++ "):"
         indentBlock :: [IndentedLine] -> [IndentedLine]
@@ -143,7 +143,7 @@ standaloneSrcToStr name (PyImport path id) =
 
 bind :: Lang -> String -> String -> String
 bind Js ident impl = "const " ++ ident ++ " = " ++ impl
-bind _ ident impl = ident ++ " = " ++ impl
+bind _ ident impl  = ident ++ " = " ++ impl
 
 --
 -- | Type aliases for `toSourceCode`.

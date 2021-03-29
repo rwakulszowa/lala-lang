@@ -2,13 +2,13 @@ module UtilsSpec
   ( spec
   ) where
 
-import Test.Hspec
-import Utils
+import           Test.Hspec
+import           Utils
 
 import qualified Data.Char
 import qualified Data.Map.Strict as Map
 
-import Data.Map (Map)
+import           Data.Map        (Map)
 
 spec :: Spec
 spec = do
@@ -27,7 +27,7 @@ spec = do
       Right mempty
     it "no conflicts" $
       unionMapsRejectOverlap [Map.fromList [('a', 0)], Map.fromList [('b', 1)]] `shouldBe`
-      (Right $ Map.fromList [('a', 0), ('b', 1)])
+      Right (Map.fromList [('a', 0), ('b', 1)])
     it "conflict" $
       unionMapsRejectOverlap [Map.fromList [('a', 0)], Map.fromList [('a', 1)]] `shouldBe`
       Left 'a'

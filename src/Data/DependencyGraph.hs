@@ -6,16 +6,16 @@ module Data.DependencyGraph
   , traverseAccum
   ) where
 
-import Control.Monad ((>>=))
-import Data.Foldable (foldrM)
-import Data.Graph (Graph)
-import Data.Map (Map, (!?))
-import Data.Maybe (fromJust)
-import Data.Set (Set)
+import           Control.Monad   ((>>=))
+import           Data.Foldable   (foldrM)
+import           Data.Graph      (Graph)
+import           Data.Map        (Map, (!?))
+import           Data.Maybe      (fromJust)
+import           Data.Set        (Set)
 
-import qualified Data.Graph as Graph
+import qualified Data.Graph      as Graph
 import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import qualified Data.Set        as Set
 import qualified Utils
 
 -- |Edges of elements with dependencies.

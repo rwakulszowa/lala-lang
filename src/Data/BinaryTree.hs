@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable #-}
+{-# LANGUAGE DeriveTraversable #-}
 
 module Data.BinaryTree
   ( BinaryTree(..)
@@ -18,7 +18,7 @@ fromList = foldl1 Node
 -- | Traverse from left to right, starting at the root.
 -- Nodes are represented as `Nothing`, leaves are represented as `Just`.
 preOrder :: BinaryTree a -> [Maybe a]
-preOrder (Leaf x) = [Just x]
+preOrder (Leaf x)   = [Just x]
 preOrder (Node a b) = [Nothing] <> preOrder a <> preOrder b
 
 -- | Reverse of `preOrder`.
