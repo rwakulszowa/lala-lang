@@ -11,6 +11,8 @@ module LalaType
   , unLalaType
   , fromParsedType
   , fromString
+  , parse
+  , unParse
   , merge
   , MergeError
   , ApplyError
@@ -43,7 +45,7 @@ import           Typiara.TypeEnv          (RootOrNotRoot (..), TypeEnv (..))
 import           Parse                    (ParsedConstraint (..),
                                            ParsedType (..), SignatureToken (..),
                                            TypeTag (..), TypeVarId (..),
-                                           parseType)
+                                           parseType, unParseType)
 import           Type                     (Type (..))
 import           Typiara.Utils            (allStrings, fromRight)
 import           Utils                    (fromListRejectOverlap, replaceValues)
@@ -130,7 +132,36 @@ fromParsedType' (ParsedType constraints signature) = do
         show
         (fromListRejectOverlap [(cT, cId) | (ParsedConstraint cId cT) <- cs])
 
+-- | Convert back to a string representation.
+-- `F` constraints are excluded from the string, as they're implicitly defined by "->".
+intoParsedType :: LalaType -> ParsedType TypeVarId
+intoParsedType lt =
+  let (signature, constraints) = unLalaType lt
+   in ParsedType
+        (intoParsedConstraint <$>
+         (filter ((/= fTag) . snd) . Map.assocs) constraints)
+        (intoSignatureToken constraints signature)
+  where
+    intoParsedConstraint (v, tag) =
+      ParsedConstraint tag (TypeVarId (readableId v))
+    intoSignatureToken cs (Node v [a, b])
+      | cs Map.! v == fTag =
+        SignatureNode (intoSignatureToken cs a) (intoSignatureToken cs b)
+    -- Nested non-function tokes are currently not supported by the parser.
+    -- Things like `s (s a)`.
+    intoSignatureToken _ (Node v vs) =
+      SignatureLeaf (TypeVarId . readableId <$> v :| (rootLabel <$> vs))
+    fTag = TypeTag "F"
+    -- Convert an enum into a readable char.
+    -- TODO: just use ints
+    readableId = cons . toEnum . (+ 65) . fromEnum
+    cons x = [x]
+
 fromString = parseType >=> fromParsedType
+
+parse = fromString
+
+unParse = unParseType . intoParsedType
 
 refresh = LalaType . TypeEnv.refreshTypeEnv . un
 

@@ -105,3 +105,14 @@ spec = do
     it "singleton" $
       unLalaType (t' (Node 'a' []) [('a', TypeTag "CNum")]) `shouldBe`
       (Node (toEnum 0) [], [(toEnum 0, TypeTag "CNum")])
+  describe "unParse" $ do
+    it "nested" $
+      unParse
+        (t'
+           (Node 'a' [Node 'b' [], Node 'c' [Node 'd' []]])
+           [ ('a', TypeTag "F")
+           , ('b', TypeTag "CNum")
+           , ('c', TypeTag "CSeq")
+           , ('d', TypeTag "CNum")
+           ]) `shouldBe`
+      "CNum B, CSeq C, CNum D => B -> C D"

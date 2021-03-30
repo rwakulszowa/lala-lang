@@ -1,9 +1,17 @@
 {-# LANGUAGE DeriveTraversable #-}
 
+-- TODO: split into separate files.
+-- There's 3 things being parsed here:
+-- - types
+-- - dynamic expressions
+-- - static expressions
+-- Each of them should use a separate parsec definition.
 module Parse
   ( parseExpression
   , parseDynamicExpression
+  , unParseDynamicExpression
   , parseType
+  , unParseType
   , ParsedType(..)
   , TypeVarId(..)
   , TypeTag(..)
@@ -13,8 +21,9 @@ module Parse
 
 import           Data.BinaryTree                        (BinaryTree (..))
 import           Data.Char
-import           Data.List                              (elemIndex, intercalate)
-import           Data.List.NonEmpty                     (NonEmpty (..))
+import           Data.List                              (elemIndex, intercalate,
+                                                         intersperse)
+import           Data.List.NonEmpty                     (NonEmpty (..), toList)
 import           Data.List.Split                        (splitOn)
 import           Data.Maybe                             (isJust)
 import           DynamicExpression
@@ -101,12 +110,25 @@ binaryTreeP leafP = do
       b <- binaryTreeP leafP
       return (Node a b)
 
+unParseBinaryTree :: (a -> String) -> BinaryTree a -> String
+unParseBinaryTree unParseA = go
+  where
+    go (Leaf a)   = unParseA a
+    go (Node x y) = "(" ++ go x ++ " " ++ go y ++ ")"
+
 -- | DynamicExpression parser.
 dynamicExprP :: Parser DynamicExpression
 dynamicExprP = binaryTreeP (dynRef <|> dynLit)
   where
     dynRef = Right <$> identifier
     dynLit = Left <$> literalP
+
+unParseDynamicExpression :: DynamicExpression -> String
+unParseDynamicExpression = unParseBinaryTree f
+  where
+    f (Left (IntLiteral i)) = show i
+    f (Left (StrLiteral s)) = show s
+    f (Right ref)           = ref
 
 -- Expression parser.
 literalP :: Parser Literal
@@ -172,7 +194,9 @@ data ParsedType a =
 -- The parser will handle them as regular strings, but they will be further
 -- processed down the path.
 newtype TypeVarId =
-  TypeVarId String
+  TypeVarId
+    { unTypeVarId :: String
+    }
   deriving (Eq, Show, Ord)
 
 -- | Raw representation of a type.
@@ -209,6 +233,12 @@ parsedTypeP = do
   reservedOp "=>"
   ParsedType constraints <$> signatureTokenP
 
+unParseType :: ParsedType TypeVarId -> String
+unParseType (ParsedType c s) =
+  let constraints = intercalate ", " $ unParseConstraint <$> c
+      signature = unParseSignature s
+   in constraints ++ " => " ++ signature
+
 -- | The signature, defined on the right side of `=>`.
 signatureTokenP = try signatureNodeP <|> signatureLeafP
 
@@ -226,6 +256,15 @@ signatureNodeP = do
   reservedOp "->"
   SignatureNode left <$> signatureTokenP
 
+unParseSignature (SignatureLeaf as) = unwords $ unTypeVarId <$> toList as
+unParseSignature (SignatureNode a b) =
+  let left =
+        case a of
+          (SignatureNode _ _) -> "(" ++ unParseSignature a ++ ")"
+          _                   -> unParseSignature a
+      right = unParseSignature b
+   in left ++ " -> " ++ right
+
 parsedConstraintP :: Parser (ParsedConstraint TypeVarId)
 parsedConstraintP = do
   whiteSpace
@@ -233,3 +272,5 @@ parsedConstraintP = do
   typeParam <- identifier
   whiteSpace
   return $ ParsedConstraint (TypeTag constraintId) (TypeVarId typeParam)
+
+unParseConstraint (ParsedConstraint (TypeTag t) (TypeVarId tv)) = t ++ " " ++ tv

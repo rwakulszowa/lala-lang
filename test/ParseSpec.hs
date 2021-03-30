@@ -23,6 +23,15 @@ spec = do
               (Leaf $ Right "Add")
               (Node (Leaf $ Right "Inc") (Leaf $ Left $ IntLiteral 1)))
            (Leaf $ Left $ StrLiteral "a"))
+  describe "unParseDynamicExpression" $ do
+    it "nested" $ do
+      let de =
+            Node
+              (Node
+                 (Leaf $ Right "Add")
+                 (Node (Leaf $ Right "Inc") (Leaf $ Left $ IntLiteral 1)))
+              (Leaf $ Left $ StrLiteral "a")
+      unParseDynamicExpression de `shouldBe` "((Add (Inc 1)) \"a\")"
   describe "parseExpression" $ do
     it "shortened literal" $
       parseExpression "1" `shouldBe`
@@ -116,3 +125,18 @@ spec = do
                  (SignatureNode
                     (SignatureLeaf (TypeVarId "c" :| []))
                     (SignatureLeaf (TypeVarId "d" :| []))))))
+  describe "unParseType" $ do
+    it "nested" $ do
+      let t =
+            ParsedType
+              [ ParsedConstraint (TypeTag "Num") (TypeVarId "a")
+              , ParsedConstraint (TypeTag "Show") (TypeVarId "b")
+              ]
+              (SignatureNode
+                 (SignatureNode
+                    (SignatureLeaf (TypeVarId "a" :| []))
+                    (SignatureLeaf (TypeVarId "b" :| [])))
+                 (SignatureNode
+                    (SignatureLeaf (TypeVarId "b" :| []))
+                    (SignatureLeaf (TypeVarId "a" :| []))))
+      unParseType t `shouldBe` "Num a, Show b => (a -> b) -> b -> a"
