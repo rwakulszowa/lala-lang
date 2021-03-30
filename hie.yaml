@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "lala:lib"
+
+    - path: "./app/Main.hs"
+      component: "lala:exe:lala-exe"
+
+    - path: "./app/Paths_lala.hs"
+      component: "lala:exe:lala-exe"
+
+    - path: "./test"
+      component: "lala:test:lala-test"
