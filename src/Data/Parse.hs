@@ -1,6 +1,7 @@
 module Data.Parse
   ( Parse(..)
   , parens
+  , parseString
   , brackets
   , whiteSpace
   , identifier
@@ -17,6 +18,18 @@ import qualified Text.ParserCombinators.Parsec.Token    as Token
 -- | Parseable types.
 class Parse a where
   parser :: Parser a
+
+parseString :: (Parse a) => String -> Either String a
+parseString s =
+  case parse (standalone parser) "" s of
+    Right x -> Right x
+    Left e  -> Left (show e)
+
+standalone parser = do
+  whiteSpace
+  result <- parser
+  eof
+  return result
 
 -- Parsec setup.
 langDef :: Token.LanguageDef ()

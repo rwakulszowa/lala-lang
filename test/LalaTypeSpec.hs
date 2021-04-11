@@ -4,13 +4,13 @@ module LalaTypeSpec
   ( spec
   ) where
 
-import           LalaType
 import           Test.Hspec
 
 import           Data.List.NonEmpty (NonEmpty (..))
 import           Data.Map           (Map)
 import           Data.Tree          (Tree (..))
-import           Parse              (ParsedConstraint (..), ParsedType (..),
+import           LalaType
+import           ParsedType         (ParsedConstraint (..), ParsedType (..),
                                      SignatureToken (..), TypeTag (..),
                                      TypeVarId (..))
 import           Type               (Type (..))

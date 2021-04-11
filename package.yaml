@@ -23,12 +23,9 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - hspec
-- split
-- bytestring
 - parsec
 - parsec-numbers
 - typiara
-- array
 - pretty-simple
 - raw-strings-qq
 

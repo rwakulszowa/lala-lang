@@ -9,10 +9,9 @@ module LalaType
   , singleton
   , lalaType
   , unLalaType
+  , unParse
   , fromParsedType
   , fromString
-  , parse
-  , unParse
   , merge
   , MergeError
   , ApplyError
@@ -34,19 +33,16 @@ import           Text.Read                (readMaybe)
 
 import           Data.Bifunctor           (first, second)
 import           Data.Map                 (Map)
+import           Data.Parse
 import           Data.Set                 (Set)
 import           Data.Tree                (Tree (..))
+import           ParsedType
+import           Type                     (Type (..))
 import           Typiara                  (apply)
 import           Typiara.Data.Tagged      (Tagged (..))
 import           Typiara.FT               (FT (..))
 import           Typiara.Infer.Expression (InferExpressionError)
 import           Typiara.TypeEnv          (RootOrNotRoot (..), TypeEnv (..))
-
-import           Parse                    (ParsedConstraint (..),
-                                           ParsedType (..), SignatureToken (..),
-                                           TypeTag (..), TypeVarId (..),
-                                           parseType, unParseType)
-import           Type                     (Type (..))
 import           Typiara.Utils            (allStrings, fromRight)
 import           Utils                    (fromListRejectOverlap, replaceValues)
 
@@ -157,9 +153,7 @@ intoParsedType lt =
     readableId = cons . toEnum . (+ 65) . fromEnum
     cons x = [x]
 
-fromString = parseType >=> fromParsedType
-
-parse = fromString
+fromString = parseString >=> fromParsedType
 
 unParse = unParseType . intoParsedType
 
