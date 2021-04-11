@@ -15,8 +15,10 @@ module Expression
   , fmapExternalRefs
   ) where
 
-import           Data.BinaryTree (BinaryTree (..))
-import qualified Data.Set        as Set
+import           Data.BinaryTree               (BinaryTree (..))
+import           Data.Parse
+import qualified Data.Set                      as Set
+import           Text.ParserCombinators.Parsec
 
 type ArgId = String
 
@@ -60,7 +62,6 @@ data Ref
 
 -- | Special constructs, such as `[]`, are not allowed. They can be built from regular
 -- functions.
--- TODO: consider removing literals and always injecting them as refs.
 data Literal
   = IntLiteral Integer
   | StrLiteral String
@@ -74,6 +75,19 @@ strLiteral = Leaf . ImplExprLit . StrLiteral
 localRef = Leaf . ImplExprRef . LocalRef
 
 externalRef = Leaf . ImplExprRef . ExternalRef
+
+instance Parse Literal where
+  parser = literalP
+
+literalP :: Parser Literal
+literalP = strLiteralP <|> intLiteralP
+  where
+    strLiteralP = StrLiteral <$> stringLiteral
+    intLiteralP = do
+      sign <- optionMaybe $ char '-'
+      let signMultiplier = maybe 1 (const $ -1) sign
+      num <- integer
+      return $ IntLiteral (num * signMultiplier)
 
 digExternalRefs :: Expression -> [String]
 digExternalRefs expr =

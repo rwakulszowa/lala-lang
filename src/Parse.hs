@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveTraversable #-}
 
--- TODO: split into separate files.
+-- TODO: split into separate files, using Data.Parse.
 -- There's 3 things being parsed here:
 -- - types
 -- - dynamic expressions
@@ -26,6 +26,7 @@ import           Data.List                              (elemIndex, intercalate,
 import           Data.List.NonEmpty                     (NonEmpty (..), toList)
 import           Data.List.Split                        (splitOn)
 import           Data.Maybe                             (isJust)
+import           Data.Parse                             (parser)
 import           DynamicExpression
 import           Expression                             (Expression (..),
                                                          ImplExprLeaf (..),
@@ -121,7 +122,7 @@ dynamicExprP :: Parser DynamicExpression
 dynamicExprP = binaryTreeP (dynRef <|> dynLit)
   where
     dynRef = Right <$> identifier
-    dynLit = Left <$> literalP
+    dynLit = Left <$> parser
 
 unParseDynamicExpression :: DynamicExpression -> String
 unParseDynamicExpression = unParseBinaryTree f
@@ -129,21 +130,6 @@ unParseDynamicExpression = unParseBinaryTree f
     f (Left (IntLiteral i)) = show i
     f (Left (StrLiteral s)) = show s
     f (Right ref)           = ref
-
--- Expression parser.
-literalP :: Parser Literal
-literalP = strLiteralP <|> intLiteralP
-
-intLiteralP = do
-  sign <- optionMaybe $ char '-'
-  num <- integer
-  return $ IntLiteral $ num * signMultiplier sign
-
-signMultiplier :: Num n => Maybe Char -> n
-signMultiplier (Just m) = -1
-signMultiplier Nothing  = 1
-
-strLiteralP = StrLiteral <$> stringLiteral
 
 expressionP :: Parser Expression
 expressionP =
@@ -163,7 +149,7 @@ implementationExpressionP :: Parser ImplementationExpression
 implementationExpressionP = binaryTreeP (constExpressionP <|> refExpressionP)
 
 constExpressionP :: Parser ImplExprLeaf
-constExpressionP = ImplExprLit <$> literalP
+constExpressionP = ImplExprLit <$> parser
 
 -- | Local refs start with a lower letter, external ones with an upper letter.
 refExpressionP :: Parser ImplExprLeaf
