@@ -6,6 +6,7 @@ module LExpr
   , singleton
   , (|<)
   , inferLExpr
+  , InferLExprError(..)
   ) where
 
 import           Control.Monad

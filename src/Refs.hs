@@ -1,5 +1,6 @@
 module Refs
   ( Refs(..)
+  , RefData(..)
   ) where
 
 import           Data.Map (Map)

@@ -6,13 +6,16 @@ module Value
   , intLiteral
   , strLiteral
   , ref
+  , ValueWithTypeLookup(..)
   ) where
 
+import           Data.Bifunctor                (first)
 import           Data.Infer
 import           Data.Map.Strict               (Map, (!?))
 import           Data.Parse
 import           LalaType                      (LalaType, singletonT)
 import           LExpr
+import           Refs
 import           Text.ParserCombinators.Parsec
 import           Type
 
@@ -67,7 +70,10 @@ instance Infer Literal where
   infer (StrLiteral _) = Right (singletonT CStr)
 
 data ValueWithTypeLookup =
-  ValueWithTypeLookup Value (Map String LalaType)
+  ValueWithTypeLookup
+    { vlValue  :: Value
+    , vlLookup :: Map String LalaType
+    }
   deriving (Eq, Show, Ord)
 
 instance Infer ValueWithTypeLookup where
