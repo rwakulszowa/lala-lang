@@ -7,6 +7,8 @@
 module LalaType
   ( LalaType(..)
   , singleton
+  , singletonT
+  , empty
   , lalaType
   , unLalaType
   , unParse
@@ -98,6 +100,11 @@ unLalaType = second (fmap unpackTypeTag) . TypeEnv.decompose . un
     unpackTypeTag t           = TypeTag t
 
 singleton = LalaType . TypeEnv.singleton
+
+-- | Exported for convenience - allows one to avoid importing `T` explicitly.
+singletonT = singleton . T
+
+empty = LalaType (TypeEnv.singleton Nil)
 
 -- `ParsedType` infers shape from the input string, but doesn't perform any
 -- logic on the values.

@@ -8,9 +8,13 @@ module Value
   , ref
   ) where
 
+import           Data.Infer
+import           Data.Map.Strict               (Map, (!?))
 import           Data.Parse
+import           LalaType                      (LalaType, singletonT)
 import           LExpr
 import           Text.ParserCombinators.Parsec
+import           Type
 
 -- | Items for value-level L-Expressions.
 data Value
@@ -54,3 +58,21 @@ literalP = strLiteralP <|> intLiteralP
       let signMultiplier = maybe 1 (const $ -1) sign
       num <- integer
       return $ IntLiteral (num * signMultiplier)
+
+--
+-- Type inference.
+--
+instance Infer Literal where
+  infer (IntLiteral _) = Right (singletonT CNum)
+  infer (StrLiteral _) = Right (singletonT CStr)
+
+data ValueWithTypeLookup =
+  ValueWithTypeLookup Value (Map String LalaType)
+  deriving (Eq, Show, Ord)
+
+instance Infer ValueWithTypeLookup where
+  infer (ValueWithTypeLookup (Lit l) _) = infer l
+  infer v@(ValueWithTypeLookup (Ref r) m) =
+    case m !? r of
+      Nothing  -> Left ("Type for " ++ r ++ " not found")
+      (Just t) -> Right t

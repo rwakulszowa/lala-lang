@@ -5,10 +5,15 @@ module LExpr
   , LExprNode(..)
   , singleton
   , (|<)
+  , inferLExpr
   ) where
 
+import           Control.Monad
+import           Data.Bifunctor                (first)
+import           Data.Infer
 import           Data.List.NonEmpty
 import           Data.Parse
+import           LalaType                      (LalaType (..), apply, empty)
 import           Text.ParserCombinators.Parsec
 
 -- | Expressions are defined in the form of L-Expressions - sequences of function applications.
@@ -52,3 +57,23 @@ lExprNodeP = parens node <|> leaf
   where
     leaf = LExprLeaf <$> parser
     node = LExprNodeRec <$> lExprP
+
+--
+-- Type inference.
+--
+inferLExpr :: (Infer a) => LExpr a -> Either (InferLExprError a) LalaType
+inferLExpr (LExpr (fun :| args)) = infer' fun >>= (\f -> foldM apply' f args)
+  where
+    apply' ft x = do
+      xt <- infer' x
+      first (const (ILEApplyError ft x)) (apply ft xt)
+    infer' (LExprLeaf x)    = first ILEInferError (infer x)
+    infer' (LExprNodeRec x) = inferLExpr x
+
+data InferLExprError a
+  = ILEApplyError
+      { f :: LalaType
+      , x :: LExprNode a
+      }
+  | ILEInferError String
+  deriving (Eq, Show)

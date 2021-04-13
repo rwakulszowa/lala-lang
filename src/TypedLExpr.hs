@@ -7,7 +7,6 @@ import           LExpr
 import           ParsedType
 import           Text.ParserCombinators.Parsec
 import           Value
-import           LalaType
 
 -- | LExpression with type annotated result.
 -- Enables type checking on the expected value - it will fail if type
