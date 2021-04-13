@@ -34,7 +34,8 @@ standalone parser = do
 -- Parsec setup.
 langDef :: Token.LanguageDef ()
 langDef =
-  emptyDef {Token.identStart = upper, Token.identLetter = alphaNum <|> char '_'}
+  emptyDef
+    {Token.identStart = letter, Token.identLetter = alphaNum <|> char '_'}
 
 lexer = Token.makeTokenParser langDef
 

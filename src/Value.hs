@@ -5,6 +5,7 @@ module Value
   , Literal(..)
   , intLiteral
   , strLiteral
+  , ref
   ) where
 
 import           Data.Parse
