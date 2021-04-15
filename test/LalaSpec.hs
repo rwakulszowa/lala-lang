@@ -6,7 +6,7 @@ module LalaSpec
   ) where
 
 import           Lala
-import           LalaType       (fromString, singletonT)
+import           LalaType   (fromString, singletonT)
 import           LExpr
 import           Refs
 import           Test.Hspec
