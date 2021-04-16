@@ -3,6 +3,7 @@ module Static.Impl
   , directDeps
   , lang
   , tosrc
+  , bind
   ) where
 
 import           Data.Foldable
@@ -35,6 +36,10 @@ tosrc Lala (LalaImpl args impl) =
   Just (unwords args ++ " -> " ++ unparse LExprSyntax impl)
 tosrc _ _ = Nothing
 
+bind :: Lang -> String -> String -> Maybe String
+bind Js id val = Just ("const " ++ id ++ " = " ++ val)
+bind _ _ _     = Nothing
+
 --
 -- LExpr conversions.
 --
@@ -42,6 +47,9 @@ data Syntax
   = LExprSyntax
   | JsSyntax
   deriving (Eq, Show, Ord)
+
+syntax Js   = JsSyntax
+syntax Lala = LExprSyntax
 
 unparse :: Syntax -> LExpr Value -> String
 unparse syntax (LExpr (t :| [])) = unparseNode syntax t
