@@ -28,6 +28,8 @@ dependencies:
 - typiara
 - pretty-simple
 - raw-strings-qq
+- bytestring
+- process
 
 library:
   source-dirs: src

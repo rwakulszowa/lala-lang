@@ -1,45 +1,49 @@
-{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE TupleSections #-}
 
 -- | Tests for top level functionality.
 module LalaSpec
   ( spec
   ) where
 
+import qualified Data.ByteString.Lazy.Char8 as BS
 import           Lala
-import           LalaType     (fromString, singletonT)
+import           LalaType                   (singletonT)
+import           Lang
 import           LExpr
-import           Static.Impl
-import           Static.Store
+import           System.Exit
+import           System.Process
 import           Test.Hspec
+import           Testing
+import           Text.RawString.QQ
 import           Type
 import           Value
 
-parseT s = either (error s) id (fromString s)
-
-store =
-  [ ( "Add"
-    , Item
-        { typ = parseT "CNum a => a -> a -> a"
-        , impl = JsLambda ["x", "y"] "x + y"
-        })
-  , ( "Show"
-    , Item
-        { typ = parseT "CNum a, CStr b => a -> b"
-        , impl = JsLambda ["x"] "x.toString()"
-        })
-  ]
+eval :: String -> IO (Either String String)
+eval content = do
+  (exitCode, stdout, stderr) <- readProcessWithExitCode "node" [] content
+  return $
+    if exitCode == ExitSuccess
+      -- Strip the trailing newline.
+      then Right (init stdout)
+      else Left (show (exitCode, stderr, content))
 
 spec :: Spec
 spec = do
-  describe "infer ValueLExpr" $ do
-    let infer' = inferValueLExpr store
-    it "sequential application" $
-      infer' (ref "Add" |< intLiteral 1 |< intLiteral 1) `shouldBe`
-      Right (singletonT CNum)
+  describe "process" $ do
+    let go e =
+          case process store Js e of
+            (Right (typ, src)) -> do
+              ret <- eval src
+              return $ (typ, ) <$> ret
+            (Left procerr) -> return $ Left (show procerr)
+    it "single application" $
+      go (ref "Inc" |< intLiteral 1) >>=
+      (`shouldBe` Right (singletonT CNum, "2"))
     it "nested application" $
-      infer'
+      go
         (ref "Add" |< (ref "Add" |< intLiteral 1 |< intLiteral 2) |<
-         intLiteral 3) `shouldBe`
-      Right (singletonT CNum)
+         intLiteral 3) >>=
+      (`shouldBe` Right (singletonT CNum, "6"))
     it "type transition" $
-      infer' (ref "Show" |< intLiteral 1) `shouldBe` Right (singletonT CStr)
+      go (ref "Show" |< intLiteral 1) >>=
+      (`shouldBe` Right (singletonT CStr, "1"))

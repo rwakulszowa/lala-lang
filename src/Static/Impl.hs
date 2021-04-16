@@ -56,10 +56,12 @@ unparse syntax (LExpr (t :| [])) = unparseNode syntax t
 unparse syntax (LExpr tokens) =
   let xs = unparseNode syntax <$> toList tokens
    in case syntax of
-        LExprSyntax -> "(" ++ unwords xs ++ ")"
+        LExprSyntax -> wrapParens (unwords xs)
         JsSyntax ->
           let (fun:args) = xs
-           in fun ++ "(" ++ intercalate ", " args ++ ")"
+           in fun ++ unwords (wrapParens <$> args)
+  where
+    wrapParens x = "(" ++ x ++ ")"
 
 unparseNode s (LExprNodeRec n) = unparse s n
 unparseNode s (LExprLeaf v)    = unparseValue v

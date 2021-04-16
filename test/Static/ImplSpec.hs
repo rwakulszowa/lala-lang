@@ -19,12 +19,12 @@ spec = do
       it "singleton" $ tosrc Js (LalaImpl [] (intLiteral 1)) `shouldBe` Just "1"
       it "application" $
         tosrc Js (LalaImpl ["x", "y"] (ref "Add" |< ref "x" |< ref "y")) `shouldBe`
-        Just "x => y => Add(x, y)"
+        Just "x => y => Add(x) (y)"
       it "nested application" $
         tosrc
           Js
           (LalaImpl ["x"] (ref "Add" |< (ref "Inc" |< intLiteral 1) |< ref "x")) `shouldBe`
-        Just "x => Add(Inc(1), x)"
+        Just "x => Add(Inc(1)) (x)"
     describe "Lala" $ do
       it "application" $
         tosrc Lala (LalaImpl ["x", "y"] (ref "Add" |< ref "x" |< ref "y")) `shouldBe`

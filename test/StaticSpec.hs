@@ -23,6 +23,6 @@ spec = do
         t "Inc 2" `shouldBe`
         Right
           [r|const Add = x => y => x + y
-const Inc = x => Add(1, x)
+const Inc = x => Add(1) (x)
 console.log(Inc(2))
 |]
