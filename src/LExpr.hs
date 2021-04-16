@@ -7,15 +7,23 @@ module LExpr
   , (|<)
   , inferLExpr
   , InferLExprError(..)
+  , intLiteral
+  , strLiteral
+  , ref
+  , refs
   ) where
 
 import           Control.Monad
 import           Data.Bifunctor                (first)
+import           Data.Foldable                 (toList)
 import           Data.Infer
-import           Data.List.NonEmpty
+import           Data.List.NonEmpty            (NonEmpty (..))
+import           Data.Maybe
 import           Data.Parse
+import qualified Data.Set                      as S
 import           LalaType                      (LalaType (..), apply, empty)
 import           Text.ParserCombinators.Parsec
+import           Value
 
 -- | Expressions are defined in the form of L-Expressions - sequences of function applications.
 -- Generic, to allow the same mechanisms to operate on type level and value level.
@@ -78,3 +86,20 @@ data InferLExprError a
       }
   | ILEInferError String
   deriving (Eq, Show)
+
+--
+-- LExpr Value utils.
+--
+-- | Convenience constructors.
+intLiteral = singleton . Lit . IntLiteral
+
+strLiteral = singleton . Lit . StrLiteral
+
+ref = singleton . Ref
+
+-- | Dig references.
+refs :: LExpr Value -> S.Set String
+refs = S.fromList . mapMaybe refOrNothing . toList
+  where
+    refOrNothing (Ref s) = Just s
+    refOrNothing _       = Nothing

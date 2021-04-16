@@ -6,24 +6,33 @@ module LalaSpec
   ) where
 
 import           Lala
-import           LalaType   (fromString, singletonT)
+import           LalaType     (fromString, singletonT)
 import           LExpr
-import           Refs
+import           Static.Impl
+import           Static.Store
 import           Test.Hspec
 import           Type
 import           Value
 
 parseT s = either (error s) id (fromString s)
 
-refs =
-  [ ("Add", RefData (parseT "CNum a => a -> a -> a"))
-  , ("Show", RefData (parseT "CNum a, CStr b => a -> b"))
+store =
+  [ ( "Add"
+    , Item
+        { typ = parseT "CNum a => a -> a -> a"
+        , impl = JsLambda ["x", "y"] "x + y"
+        })
+  , ( "Show"
+    , Item
+        { typ = parseT "CNum a, CStr b => a -> b"
+        , impl = JsLambda ["x"] "x.toString()"
+        })
   ]
 
 spec :: Spec
 spec = do
   describe "infer ValueLExpr" $ do
-    let infer' = inferValueLExpr refs
+    let infer' = inferValueLExpr store
     it "sequential application" $
       infer' (ref "Add" |< intLiteral 1 |< intLiteral 1) `shouldBe`
       Right (singletonT CNum)

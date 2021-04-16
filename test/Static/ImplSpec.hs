@@ -7,7 +7,6 @@ module Static.ImplSpec
 import           LalaType    (fromString, singletonT)
 import           Lang
 import           LExpr
-import           Refs
 import           Static.Impl
 import           Test.Hspec
 import           Type

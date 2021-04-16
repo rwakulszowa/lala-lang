@@ -3,6 +3,7 @@ module ValueSpec
   ) where
 
 import           Data.Parse
+import           LExpr
 import           Test.Hspec
 import           Value
 

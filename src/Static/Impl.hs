@@ -20,13 +20,8 @@ data Impl
   deriving (Eq, Show, Ord)
 
 directDeps :: Impl -> S.Set String
-directDeps (JsLambda _ _) = mempty
+directDeps (JsLambda _ _)        = mempty
 directDeps (LalaImpl args lexpr) = refs lexpr S.\\ S.fromList args
-  where
-    refs = S.fromList . mapMaybe refOrNothing . toList
-      where
-        refOrNothing (Ref s) = Just s
-        refOrNothing _       = Nothing
 
 lang :: Impl -> Lang
 lang (JsLambda _ _) = Js

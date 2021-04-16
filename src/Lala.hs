@@ -5,11 +5,11 @@ module Lala
 import           Data.Bifunctor (first)
 import           LalaType
 import           LExpr
-import           Refs
+import           Static.Store
 import           Value
 
 inferValueLExpr ::
-     Refs -> LExpr Value -> Either (InferLExprError Value) LalaType
+     Store -> LExpr Value -> Either (InferLExprError Value) LalaType
 inferValueLExpr refs =
   first unwrapError . inferLExpr . fmap (`ValueWithTypeLookup` typeLookup)
   where

@@ -3,9 +3,6 @@
 module Value
   ( Value(..)
   , Literal(..)
-  , intLiteral
-  , strLiteral
-  , ref
   , ValueWithTypeLookup(..)
   ) where
 
@@ -14,8 +11,6 @@ import           Data.Infer
 import           Data.Map.Strict               (Map, (!?))
 import           Data.Parse
 import           LalaType                      (LalaType, singletonT)
-import           LExpr
-import           Refs
 import           Text.ParserCombinators.Parsec
 import           Type
 
@@ -32,13 +27,6 @@ data Literal
   = IntLiteral Integer
   | StrLiteral String
   deriving (Show, Eq, Ord)
-
--- | Convenience constructors.
-intLiteral = singleton . Lit . IntLiteral
-
-strLiteral = singleton . Lit . StrLiteral
-
-ref = singleton . Ref
 
 instance Parse Value where
   parser = valueP
