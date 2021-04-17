@@ -1,0 +1,59 @@
+name:                lala
+version:             0.1.0.0
+github:              "rwakulszowa/lala"
+license:             BSD3
+author:              "rwakulszowa"
+maintainer:          "rwakulszowa1@gmail.com"
+copyright:           "orajt"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/rwakulszowa/lala#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- hspec
+- split
+- aeson
+- bytestring
+- parsec
+- parsec-numbers
+- typiara
+- array
+- pretty-simple
+- raw-strings-qq
+
+library:
+  source-dirs: src
+
+executables:
+  lala-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - lala
+
+tests:
+  lala-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - lala

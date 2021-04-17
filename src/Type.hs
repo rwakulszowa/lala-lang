@@ -1,0 +1,42 @@
+{-# LANGUAGE DeriveTraversable, DeriveDataTypeable,
+  MultiParamTypeClasses, FlexibleInstances, TemplateHaskell #-}
+
+module Type
+  ( Type(..)
+  ) where
+
+import Data.Aeson.TH (defaultOptions, deriveJSON)
+import Data.Data (Data, Typeable, toConstr)
+import Typiara.Data.Tagged (Tagged(..))
+import Typiara.FT (FT(..))
+import Typiara.Typ (Typ(..), UnifyError(..), UnifyResult(..))
+
+-- A simple set of types.
+-- Prefixed with "C" to avoid clashes with Haskell.
+data Type a
+  = CSeq a
+  | CBool
+  | CNum
+  | CStr
+  deriving (Eq, Show, Read, Ord, Functor, Foldable, Traversable, Data, Typeable)
+
+$(deriveJSON defaultOptions ''Type)
+
+instance Typ Type where
+  unify Nil a = Right (Unified a)
+  unify a Nil = unify Nil a
+  unify (T (CSeq a)) (T (CSeq b)) = Right (TypeVarsToUnify [(a, b)])
+  unify (F a b) (F a' b') = Right (TypeVarsToUnify [(a, a'), (b, b')])
+  unify x y =
+    if x == y
+      then Right (Unified x)
+      else Left (ConflictingTypes x y)
+
+instance (Data a) => Tagged Type a where
+  tag = show . toConstr
+  -- TODO: try to reuse the magic `gunfold` function from `Data.Data`.
+  fromTag "CBool" [] = Just CBool
+  fromTag "CNum" [] = Just CNum
+  fromTag "CStr" [] = Just CStr
+  fromTag "CSeq" [a] = Just (CSeq a)
+  fromTag _ _ = Nothing
