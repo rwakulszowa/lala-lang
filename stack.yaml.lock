@@ -3,7 +3,18 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    name: typiara
+    version: 0.1.0.0
+    git: https://github.com/rwakulszowa/typiara.git
+    pantry-tree:
+      size: 1920
+      sha256: 55b9130465c3a5183994aff13a7a74059b17a7e69551caacd04e468276baf82a
+    commit: a1a89638faace19a819d563fb58cbf7221d7f9d0
+  original:
+    git: https://github.com/rwakulszowa/typiara.git
+    commit: a1a89638faace19a819d563fb58cbf7221d7f9d0
 snapshots:
 - completed:
     size: 498167
