@@ -1,8 +1,10 @@
 module Lala
   ( process
+  , Lang(..)
   ) where
 
 import           Data.Bifunctor (first)
+import           Data.Parse
 import           LalaType
 import           Lang
 import           LExpr

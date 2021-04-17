@@ -105,7 +105,7 @@ store = jsItems <> lalaItems
       [ ( "Const"
         , Item
             { typ = t "Nil a, Nil b => a -> b -> a"
-            , impl = LalaImpl ["a", "b"] (e "x")
+            , impl = LalaImpl ["a", "b"] (e "a")
             })
       , ( "Apply"
         , Item
@@ -132,5 +132,8 @@ store = jsItems <> lalaItems
         , Item {typ = t "CNum a => a -> a", impl = LalaImpl [] (e "Add 1")})
       -- Sequences
       , ( "Len"
-        , Item {typ = t "CNum a => a -> a", impl = LalaImpl [] (e "Foldl (Compose Const Inc)")})
+        , Item
+            { typ = t "CSeq s, Nil a, CNum n => s a -> n"
+            , impl = LalaImpl [] (e "Foldl (Compose Const Inc) 0")
+            })
       ]
