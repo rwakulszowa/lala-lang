@@ -1,6 +1,6 @@
-name:                lala
+name:                lala-lang
 version:             0.1.0.0
-github:              "rwakulszowa/lala"
+github:              "rwakulszowa/lala-lang"
 license:             BSD3
 author:              "rwakulszowa"
 maintainer:          "rwakulszowa1@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/rwakulszowa/lala#readme>
+description:         Please see the README on GitHub at <https://github.com/rwakulszowa/lala-lang#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -35,7 +35,7 @@ library:
   source-dirs: src
 
 executables:
-  lala-exe:
+  lala-lang-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -43,10 +43,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - lala
+    - lala-lang
 
 tests:
-  lala-test:
+  lala-lang-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -54,4 +54,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - lala
+    - lala-lang
