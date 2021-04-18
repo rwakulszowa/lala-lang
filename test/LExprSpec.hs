@@ -2,6 +2,7 @@ module LExprSpec
   ( spec
   ) where
 
+import           Data.Parse
 import           LalaType   (fromString, singletonT)
 import           LExpr
 import           Test.Hspec
@@ -9,6 +10,8 @@ import           Type
 
 spec :: Spec
 spec = do
+  describe "unparse" $ do
+    it "application" $ unparse (ref "Inc" |< intLiteral 1) `shouldBe` "Inc 1"
   describe "inferLExpr" $ do
     it "singleton" $
       inferLExpr (singleton (singletonT CNum)) `shouldBe`

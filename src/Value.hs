@@ -37,6 +37,10 @@ valueP = refP <|> litP
     refP = Ref <$> identifier
     litP = Lit <$> parser
 
+instance Unparse Value where
+  unparse (Ref r) = r
+  unparse (Lit l) = unparse l
+
 instance Parse Literal where
   parser = literalP
 
@@ -49,6 +53,10 @@ literalP = strLiteralP <|> intLiteralP
       let signMultiplier = maybe 1 (const $ -1) sign
       num <- integer
       return $ IntLiteral (num * signMultiplier)
+
+instance Unparse Literal where
+  unparse (StrLiteral s) = "\"" ++ s ++ "\""
+  unparse (IntLiteral i) = show i
 
 --
 -- Type inference.

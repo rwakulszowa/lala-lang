@@ -8,6 +8,7 @@ module Data.Parse
   , stringLiteral
   , integer
   , reservedOp
+  , Unparse(..)
   ) where
 
 import           Text.ParserCombinators.Parsec
@@ -52,3 +53,10 @@ stringLiteral = Token.stringLiteral lexer
 integer = Token.integer lexer
 
 reservedOp = Token.reservedOp lexer
+
+-- | Un-Parseable types.
+-- unparse . parse = id
+class (Parse a) =>
+      Unparse a
+  where
+  unparse :: a -> String

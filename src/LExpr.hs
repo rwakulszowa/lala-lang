@@ -67,6 +67,12 @@ lExprNodeP = parens node <|> leaf
     leaf = LExprLeaf <$> parser
     node = LExprNodeRec <$> lExprP
 
+instance (Unparse a) => Unparse (LExpr a) where
+  unparse (LExpr nodes) = unwords (unparseNode <$> toList nodes)
+    where
+      unparseNode (LExprNodeRec rec) = "(" ++ unparse rec ++ ")"
+      unparseNode (LExprLeaf a)      = unparse a
+
 --
 -- Type inference.
 --
