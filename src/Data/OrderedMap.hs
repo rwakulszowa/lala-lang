@@ -7,7 +7,7 @@ module Data.OrderedMap
   , omlookup
   , ommember
   , omassocs
-  , leftBiasedConcat
+  , rightBiasedConcat
   ) where
 
 import qualified Data.Map   as M
@@ -54,7 +54,7 @@ ommember om = isJust . omlookup om
 omassocs :: (Ord k) => OrderedMap k v -> [(k, v)]
 omassocs (OrderedMap d ord) = [(k, d M.! k) | k <- ord]
 
-leftBiasedConcat :: (Ord k) => [OrderedMap k v] -> OrderedMap k v
-leftBiasedConcat = foldl concatPair omnull
+rightBiasedConcat :: (Ord k) => [OrderedMap k v] -> OrderedMap k v
+rightBiasedConcat = foldl concatPair omnull
   where
-    concatPair x y = foldr (uncurry ominsertOrDrop) x (omassocs y)
+    concatPair x y = foldr (uncurry ominsertOrDrop) y (omassocs x)

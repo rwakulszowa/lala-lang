@@ -40,7 +40,7 @@ resolve s le = do
   return $
     Resolved
       le
-      (fmap (uncurry Binding) . OM.omassocs . OM.leftBiasedConcat $ bindings)
+      (fmap (uncurry Binding) . OM.omassocs . OM.rightBiasedConcat $ bindings)
   where
     go bindings ref
       | bindings `OM.ommember` ref = Right bindings
@@ -53,4 +53,4 @@ resolve s le = do
             of
         []  -> Right bindings'
         -- Handle children.
-        dug -> OM.leftBiasedConcat <$> traverse (go bindings') dug
+        dug -> OM.rightBiasedConcat <$> traverse (go bindings') dug
