@@ -40,8 +40,6 @@ store = jsItems <> lalaItems
             { typ = t "CNum a => a -> a -> a"
             , impl = JsLambda ["x", "y"] "x * y"
             })
-      , ( "Reciprocal"
-        , Item {typ = t "CNum a => a -> a", impl = JsLambda ["x"] "1/x"})
       -- Strings
       , ( "Lower"
         , Item
@@ -107,6 +105,7 @@ store = jsItems <> lalaItems
             { typ = t "Nil a, Nil b => a -> b -> a"
             , impl = LalaImpl ["a", "b"] (e "a")
             })
+      , ("Id", Item {typ = t "Nil a => a -> a", impl = LalaImpl ["x"] (e "x")})
       , ( "Apply"
         , Item
             { typ = t "Nil a, Nil b => (a -> b) -> a -> b"

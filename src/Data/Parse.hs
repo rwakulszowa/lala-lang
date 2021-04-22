@@ -3,6 +3,7 @@ module Data.Parse
   , parens
   , parseString
   , brackets
+  , commaSep
   , whiteSpace
   , identifier
   , stringLiteral
@@ -43,6 +44,8 @@ lexer = Token.makeTokenParser langDef
 parens = Token.parens lexer
 
 brackets = Token.brackets lexer
+
+commaSep = Token.commaSep lexer
 
 whiteSpace = Token.whiteSpace lexer
 
