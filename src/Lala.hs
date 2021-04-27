@@ -1,5 +1,6 @@
 module Lala
   ( process
+  , inferLExprWithinStore
   , Lang(..)
   ) where
 
@@ -22,14 +23,7 @@ process store lang lexpr = do
   src <- transpile'
   return (typ, src)
   where
-    infer =
-      first (InferError . unwrapError) .
-      inferLExpr . fmap (`ValueWithTypeLookup` typeLookup) $
-      lexpr
-      where
-        typeLookup = typ <$> store
-        unwrapError (ILEApplyError f x) = ILEApplyError f (vlValue <$> x)
-        unwrapError (ILEInferError x)   = ILEInferError x
+    infer = first InferError (inferLExprWithinStore store lexpr)
     transpile' = first TranspileError (transpile store lang lexpr)
 
 -- TODO: use the magic `:+:` type operator.
@@ -37,3 +31,12 @@ data ProcessError
   = TranspileError TranspileError
   | InferError (InferLExprError Value)
   deriving (Eq, Show)
+
+inferLExprWithinStore ::
+     Store -> LExpr Value -> Either (InferLExprError Value) LalaType
+inferLExprWithinStore store =
+  first unwrapError . inferLExpr . fmap (`ValueWithTypeLookup` typeLookup)
+  where
+    typeLookup = typ <$> store
+    unwrapError (ILEApplyError f x) = ILEApplyError f (vlValue <$> x)
+    unwrapError (ILEInferError x)   = ILEInferError x
