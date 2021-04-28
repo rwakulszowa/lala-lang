@@ -3,6 +3,7 @@ module Static.Resolve where
 import           Data.Foldable   (toList)
 import qualified Data.Map.Strict as M
 import qualified Data.OrderedMap as OM
+import qualified Data.Text       as T
 import           LExpr
 import           Static.Impl
 import           Static.Store
@@ -10,7 +11,7 @@ import           Value
 
 data Binding =
   Binding
-    { key  :: String
+    { key  :: T.Text
     , item :: Item
     }
   deriving (Eq, Show, Ord)
@@ -25,7 +26,7 @@ data Resolved =
   deriving (Eq, Show)
 
 newtype ResolveError =
-  RefNotFound String
+  RefNotFound T.Text
   deriving (Eq, Show, Ord)
 
 -- | Bind each deendency with an item from `Store`.

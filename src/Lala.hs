@@ -6,6 +6,7 @@ module Lala
 
 import           Data.Bifunctor (first)
 import           Data.Parse
+import qualified Data.Text      as T
 import           LalaType
 import           Lang
 import           LExpr
@@ -17,7 +18,7 @@ import           Value
 -- NOTE: the implementation depends on the "one type per ref" assumption. If the assumption changes,
 -- the implementation will have to change, most likely by making type lookup `Bindings`-aware.
 process ::
-     Store -> Lang -> LExpr Value -> Either ProcessError (LalaType, String)
+     Store -> Lang -> LExpr Value -> Either ProcessError (LalaType, T.Text)
 process store lang lexpr = do
   typ <- infer
   src <- transpile'

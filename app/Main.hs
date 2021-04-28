@@ -2,6 +2,7 @@ module Main where
 
 import           Data.Bifunctor
 import           Data.Parse
+import qualified Data.Text             as T
 import           Lala
 import           Static.HardcodedStore (store)
 import           System.Environment
@@ -17,6 +18,6 @@ main = do
   putStrLn (handle contents)
   where
     handle s = print $ parseString s >>= (coerceErr . process store Js)
-    print (Right (_, src)) = src
+    print (Right (_, src)) = T.unpack src
     print (Left e)         = "Error: " ++ e
     coerceErr = first show

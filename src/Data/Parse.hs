@@ -1,3 +1,6 @@
+-- | Parsing and unparsing logic.
+-- Parsers operate on `String`s, because that seems to be the more approachable Parsec interface.
+-- All further processing is done on `Text`.
 module Data.Parse
   ( Parse(..)
   , parens
@@ -12,6 +15,7 @@ module Data.Parse
   , Unparse(..)
   ) where
 
+import qualified Data.Text                              as T
 import           Text.ParserCombinators.Parsec
 import           Text.ParserCombinators.Parsec.Expr
 import           Text.ParserCombinators.Parsec.Language
@@ -62,4 +66,4 @@ reservedOp = Token.reservedOp lexer
 class (Parse a) =>
       Unparse a
   where
-  unparse :: a -> String
+  unparse :: a -> T.Text

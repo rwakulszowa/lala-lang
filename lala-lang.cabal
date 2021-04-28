@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 78b3a97e3af87772f290f0ce1c5a2d150f9368fbfbd26dca951ac4edeaef0687
+-- hash: f9a89ecfd0299d51f06b9e950d2c2aaf27b562e75e206548cdd247ca57a308a6
 
 name:           lala-lang
 version:        0.1.0.0
@@ -51,7 +51,6 @@ library
       src
   build-depends:
       base >=4.7 && <5
-    , bytestring
     , containers
     , hspec
     , parsec
@@ -59,6 +58,7 @@ library
     , pretty-simple
     , process
     , raw-strings-qq
+    , text
     , typiara
   default-language: Haskell2010
 
@@ -71,7 +71,6 @@ executable lala-lang-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
     , containers
     , hspec
     , lala-lang
@@ -80,6 +79,7 @@ executable lala-lang-exe
     , pretty-simple
     , process
     , raw-strings-qq
+    , text
     , typiara
   default-language: Haskell2010
 
@@ -104,7 +104,6 @@ test-suite lala-lang-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
     , containers
     , hspec
     , lala-lang
@@ -113,5 +112,6 @@ test-suite lala-lang-test
     , pretty-simple
     , process
     , raw-strings-qq
+    , text
     , typiara
   default-language: Haskell2010

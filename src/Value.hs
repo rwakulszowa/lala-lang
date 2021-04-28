@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Value
@@ -10,13 +11,14 @@ import           Data.Bifunctor                (first)
 import           Data.Infer
 import           Data.Map.Strict               (Map, (!?))
 import           Data.Parse
+import qualified Data.Text                     as T
 import           LalaType                      (LalaType, singletonT)
 import           Text.ParserCombinators.Parsec
 import           Type
 
 -- | Items for value-level L-Expressions.
 data Value
-  = Ref String
+  = Ref T.Text
   | Lit Literal
   deriving (Eq, Show, Ord)
 
@@ -25,7 +27,7 @@ data Value
 -- TODO: introduce sequence literals: IntSeq, StrSeq, NilSeq
 data Literal
   = IntLiteral Integer
-  | StrLiteral String
+  | StrLiteral T.Text
   deriving (Show, Eq, Ord)
 
 instance Parse Value where
@@ -34,7 +36,7 @@ instance Parse Value where
 valueP :: Parser Value
 valueP = refP <|> litP
   where
-    refP = Ref <$> identifier
+    refP = Ref . T.pack <$> identifier
     litP = Lit <$> parser
 
 instance Unparse Value where
@@ -47,7 +49,7 @@ instance Parse Literal where
 literalP :: Parser Literal
 literalP = strLiteralP <|> intLiteralP
   where
-    strLiteralP = StrLiteral <$> stringLiteral
+    strLiteralP = StrLiteral . T.pack <$> stringLiteral
     intLiteralP = do
       sign <- optionMaybe $ char '-'
       let signMultiplier = maybe 1 (const $ -1) sign
@@ -55,8 +57,8 @@ literalP = strLiteralP <|> intLiteralP
       return $ IntLiteral (num * signMultiplier)
 
 instance Unparse Literal where
-  unparse (StrLiteral s) = "\"" ++ s ++ "\""
-  unparse (IntLiteral i) = show i
+  unparse (StrLiteral s) = "\"" <> s <> "\""
+  unparse (IntLiteral i) = T.pack (show i)
 
 --
 -- Type inference.
@@ -68,7 +70,7 @@ instance Infer Literal where
 data ValueWithTypeLookup =
   ValueWithTypeLookup
     { vlValue  :: Value
-    , vlLookup :: Map String LalaType
+    , vlLookup :: Map T.Text LalaType
     }
   deriving (Eq, Show, Ord)
 
@@ -76,5 +78,5 @@ instance Infer ValueWithTypeLookup where
   infer (ValueWithTypeLookup (Lit l) _) = infer l
   infer v@(ValueWithTypeLookup (Ref r) m) =
     case m !? r of
-      Nothing  -> Left ("Type for " ++ r ++ " not found")
+      Nothing  -> Left ("Type for " ++ T.unpack r ++ " not found")
       (Just t) -> Right t

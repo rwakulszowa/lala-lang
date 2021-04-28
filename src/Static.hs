@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- | The language is divided into a static and a dynamic part.
 -- The static part is responsible for defining context in which dynamic expressions
 -- will be resolved.
@@ -14,6 +16,7 @@ module Static
 
 import           Data.Bifunctor
 import           Data.Maybe
+import qualified Data.Text      as T
 import           Lang
 import           LExpr
 import           Static.Impl
@@ -26,7 +29,7 @@ data TranspileError
   | LangNotSupported Lang
   deriving (Eq, Show)
 
-transpile :: Store -> Lang -> LExpr Value -> Either TranspileError String
+transpile :: Store -> Lang -> LExpr Value -> Either TranspileError T.Text
 transpile store lang lexpr = resolve' lexpr >>= transpile'
   where
     resolve' = first ResolveError . resolve store
@@ -36,11 +39,11 @@ transpile store lang lexpr = resolve' lexpr >>= transpile'
       deps <-
         sequence [transpileOne id (impl item) | (Binding id item) <- bindings]
       expr <- maybeRight (LangNotSupported lang) (tosrc lang (LalaImpl [] expr))
-      return $ unlines (deps ++ [outputFun lang expr])
+      return $ T.unlines (deps ++ [outputFun lang expr])
     maybeRight err = maybe (Left err) Right
 
 -- | Language specific conversion of a value to the expected format.
 -- For now - simply printing to stdout will do.
 -- TODO: handle more cases - noop, exports, etc.
-outputFun :: Lang -> String -> String
-outputFun Js impl = "console.log(" ++ impl ++ ")"
+outputFun :: Lang -> T.Text -> T.Text
+outputFun Js impl = "console.log(" <> impl <> ")"

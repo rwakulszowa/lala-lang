@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module TypedLExprSpec
   ( spec
   ) where

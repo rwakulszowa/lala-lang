@@ -28,7 +28,7 @@ dependencies:
 - typiara
 - pretty-simple
 - raw-strings-qq
-- bytestring
+- text
 - process
 
 library:

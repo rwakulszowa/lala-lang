@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE OverloadedLists   #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- | A hardcoded set of implementations added for convenience.
 -- In practice, store should be loaded dynamically.

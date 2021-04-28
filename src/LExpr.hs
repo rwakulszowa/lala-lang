@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module LExpr
   ( LExpr(..)
@@ -21,6 +22,7 @@ import           Data.List.NonEmpty            (NonEmpty (..))
 import           Data.Maybe
 import           Data.Parse
 import qualified Data.Set                      as S
+import qualified Data.Text                     as T
 import           LalaType                      (LalaType (..), apply, empty)
 import           Text.ParserCombinators.Parsec
 import           Value
@@ -68,9 +70,9 @@ lExprNodeP = parens node <|> leaf
     node = LExprNodeRec <$> lExprP
 
 instance (Unparse a) => Unparse (LExpr a) where
-  unparse (LExpr nodes) = unwords (unparseNode <$> toList nodes)
+  unparse (LExpr nodes) = T.unwords (unparseNode <$> toList nodes)
     where
-      unparseNode (LExprNodeRec rec) = "(" ++ unparse rec ++ ")"
+      unparseNode (LExprNodeRec rec) = "(" <> unparse rec <> ")"
       unparseNode (LExprLeaf a)      = unparse a
 
 --
@@ -104,7 +106,7 @@ strLiteral = singleton . Lit . StrLiteral
 ref = singleton . Ref
 
 -- | Dig references.
-refs :: LExpr Value -> S.Set String
+refs :: LExpr Value -> S.Set T.Text
 refs = S.fromList . mapMaybe refOrNothing . toList
   where
     refOrNothing (Ref s) = Just s

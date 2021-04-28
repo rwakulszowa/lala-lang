@@ -1,13 +1,14 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections     #-}
 
 -- | Tests for top level functionality.
 module LalaSpec
   ( spec
   ) where
 
-import qualified Data.ByteString.Lazy.Char8 as BS
+import qualified Data.Text         as T
 import           Lala
-import           LalaType                   (singletonT)
+import           LalaType          (singletonT)
 import           Lang
 import           LExpr
 import           System.Exit
@@ -18,9 +19,10 @@ import           Text.RawString.QQ
 import           Type
 import           Value
 
-eval :: String -> IO (Either String String)
+eval :: T.Text -> IO (Either String String)
 eval content = do
-  (exitCode, stdout, stderr) <- readProcessWithExitCode "node" [] content
+  (exitCode, stdout, stderr) <-
+    readProcessWithExitCode "node" [] (T.unpack content)
   return $
     if exitCode == ExitSuccess
       -- Strip the trailing newline.
