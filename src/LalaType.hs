@@ -14,6 +14,7 @@ module LalaType
   , unParse
   , fromParsedType
   , fromString
+  , arity
   , merge
   , MergeError
   , ApplyError
@@ -51,7 +52,9 @@ import           Utils                    (fromListRejectOverlap, replaceValues)
 -- A result of processing a raw `ParsedType`.
 -- Serves as an interface to the type checking world implemented by `Typiara`.
 newtype LalaType =
-  LalaType (TypeEnv Type Char)
+  LalaType
+    { typeEnv :: TypeEnv Type Char
+    }
   deriving (Eq, Ord)
 
 instance Show LalaType where
@@ -215,6 +218,9 @@ refreshShapeIdents =
             (ExplicitExternalIdent ident) ->
               (funIdents, Map.insert ident v externalIdentMapping)
             (ExplicitFunIdent i) -> (v : funIdents, externalIdentMapping)
+
+arity :: LalaType -> Int
+arity = TypeEnv.arity . typeEnv
 
 newtype MergeError =
   MergeError (TypeEnv.UnifyEnvError Char)
