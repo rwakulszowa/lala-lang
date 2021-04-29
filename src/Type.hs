@@ -17,6 +17,7 @@ import           Typiara.Typ         (Typ (..), UnifyError (..),
 -- Prefixed with "C" to avoid clashes with Haskell.
 data Type a
   = CSeq a
+  | CMaybe a
   | CBool
   | CNum
   | CStr
@@ -24,6 +25,7 @@ data Type a
 
 instance Typ Type where
   unify (CSeq a) (CSeq b) = Right (UnifyResult (CSeq a) [(a, b)])
+  unify (CMaybe a) (CMaybe b) = Right (UnifyResult (CMaybe a) [(a, b)])
   unify x y =
     if x == y
       then Right (UnifyResult x [])
@@ -32,8 +34,9 @@ instance Typ Type where
 instance (Data a) => Tagged Type a where
   tag = show . toConstr
   -- TODO: try to reuse the magic `gunfold` function from `Data.Data`.
-  fromTag "CBool" [] = Just CBool
-  fromTag "CNum" []  = Just CNum
-  fromTag "CStr" []  = Just CStr
-  fromTag "CSeq" [a] = Just (CSeq a)
-  fromTag _ _        = Nothing
+  fromTag "CBool" []   = Just CBool
+  fromTag "CNum" []    = Just CNum
+  fromTag "CStr" []    = Just CStr
+  fromTag "CSeq" [a]   = Just (CSeq a)
+  fromTag "CMaybe" [a] = Just (CMaybe a)
+  fromTag _ _          = Nothing

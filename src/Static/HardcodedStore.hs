@@ -65,7 +65,7 @@ store = jsItems <> lalaItems
       -- Sequences
       , ( "Head"
         , Item
-            { typ = t "CSeq s, Nil a => s a -> a"
+            { typ = t "CSeq s, CMaybe m, Nil a => s a -> m a"
             , impl = JsLambda ["seq"] "seq[0]"
             })
       , ( "Tail"
@@ -96,6 +96,17 @@ store = jsItems <> lalaItems
                 JsLambda
                   ["f", "zero", "seq"]
                   "seq.reduce((acc, el) => f(acc)(el), zero)"
+            })
+      -- Maybe
+      , ( "Fmap"
+        , Item
+            { typ = t "CMaybe m, Nil a, Nil b => (a -> b) -> m a -> m b"
+            , impl = JsLambda ["f", "m"] "m && f(m)"
+            })
+      , ( "Combine"
+        , Item
+            { typ = t "CMaybe m, Nil a, Nil b => m a -> (a -> m b) -> m b"
+            , impl = JsLambda ["m", "f"] "m && f(m)"
             })
       ]
     lalaItems

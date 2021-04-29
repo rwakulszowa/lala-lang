@@ -41,4 +41,10 @@ store =
         { typ = parseT "CNum a, CStr b => a -> b"
         , impl = JsLambda ["x"] "x.toString()"
         })
+  , ( "Head"
+    , Item
+        { typ = parseT "CSeq s, CMaybe m, Nil a => s a -> m a"
+        , impl = JsLambda ["seq"] "seq[0]"
+        })
+  , ("Nil", Item {typ = parseT "CSeq s, Nil a => s a", impl = JsLambda [] "[]"})
   ]

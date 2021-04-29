@@ -49,3 +49,6 @@ spec = do
     it "type transition" $
       go (ref "Show" |< intLiteral 1) >>=
       (`shouldBe` Right (singletonT CStr, "1"))
+    it "Maybe" $
+      go (ref "Head" |< ref "Nil") >>=
+      (`shouldBe` Right (parseT "CMaybe m, Nil a => m a", "undefined"))
