@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TupleSections     #-}
 
 -- | This file is the main interface to the `Typiara` world.
 -- Other modules should not import `Typiara` directly (with a few, minor
@@ -47,7 +48,8 @@ import           Typiara.FT               (FT (..))
 import           Typiara.Infer.Expression (InferExpressionError)
 import           Typiara.TypeEnv          (RootOrNotRoot (..), TypeEnv (..))
 import           Typiara.Utils            (allStrings, fromRight)
-import           Utils                    (fromListRejectOverlap, replaceValues)
+import           Utils                    (fromListRejectOverlap, replaceValues,
+                                           unionMapsRejectOverlap)
 
 -- A result of processing a raw `ParsedType`.
 -- Serves as an interface to the type checking world implemented by `Typiara`.
@@ -112,31 +114,36 @@ empty = LalaType (TypeEnv.singleton Nil)
 -- `ParsedType` infers shape from the input string, but doesn't perform any
 -- logic on the values.
 -- This function enforces that the content is legit.
+-- TODO: consider moving helpers to a separate file / ParsedType. This file should contain the interface, not the details.
 fromParsedType :: ParsedType TypeVarId -> Either String LalaType
 fromParsedType = fromParsedType' . snd . replaceValues ['a' ..]
 
 fromParsedType' :: ParsedType Char -> Either String LalaType
 fromParsedType' (ParsedType constraints signature) = do
-  let ((funIdents, externalIdentDiff), signatureShape) =
+  let ((funs, gens, grounds), signatureShape) =
         refreshShapeIdents . signatureToShape $ signature
+  -- Each generic may map to multiple new ids.
+  -- Each ground maps to a single new id.
+  -- Combine all into a single diff from old ids into fresh ones.
+  extendedDiff <- first show (unionMapsRejectOverlap [gens, (: []) <$> grounds])
   refreshedConstraints <-
-    mapM (mapConstraintThroughLookup externalIdentDiff) constraints
-  externalConstraintMap <- buildConstraintMap refreshedConstraints
-  lalaType
-    signatureShape
-    (externalConstraintMap <> buildImplicitFunConstraints funIdents)
+    extendConstraints extendedDiff >>= first show . fromListRejectOverlap
+  lalaType signatureShape (refreshedConstraints <> funConstraints funs)
   where
-    mapConstraintThroughLookup typeIdentMapping (ParsedConstraint constraintId typeParam) =
-      maybe
-        (Left $ "typeParam not found: " ++ show typeParam)
-        (Right . ParsedConstraint constraintId) $
-      typeParam `Map.lookup` typeIdentMapping
-    buildImplicitFunConstraints idents =
+    applyMap m x = maybe (Left ("Key not found: " ++ show x)) Right (m Map.!? x)
+    funConstraints idents =
       Map.fromList [(ident, TypeTag "F") | ident <- idents]
-    buildConstraintMap cs =
-      first
-        show
-        (fromListRejectOverlap [(cT, cId) | (ParsedConstraint cId cT) <- cs])
+    -- | A list representation of constraints.
+    -- Added here for readability - variable naming and types are a bit confusing.
+    -- Remove after cleaning up `ParsedType`.
+    constraintsList :: [(Char, TypeTag)]
+    constraintsList = [(cT, cId) | (ParsedConstraint cId cT) <- constraints]
+    -- | The amount of unique constraints may grow if generics are used.
+    -- Convert the original items into a list with potential new items, according to a diff `m`.
+    extendConstraints :: Map Char [Char] -> Either String [(Char, TypeTag)]
+    extendConstraints m = concat <$> traverse f constraintsList
+      where
+        f (a, b) = fmap (, b) <$> applyMap m a
 
 -- | Convert back to a string representation.
 -- `F` constraints are excluded from the string, as they're implicitly defined by "->".
@@ -169,55 +176,66 @@ unParse = unParseType . intoParsedType
 
 refresh = LalaType . TypeEnv.refreshTypeEnv . un
 
--- Each `ImplicitFunIdent` will be mapped to a new, unique `TypeIdent`. Not usable in `Map`s.
+-- | Idents provided by the user, enriched with implicit data.
 data ImplicitShapeIdent
-  = ImplicitExternalIdent TypeIdent
-  | ImplicitFunIdent
+  -- | Ground (right-most) type ident. Those are the only idents that can be
+  -- directly linked by the user.
+  = IGround TypeIdent
+  -- | Generic (non right-most) type ident. Each instantiation will be replaced by a unique explicit ident.
+  -- Generics should not be directly linked by the user; they may become linked by applying linked ground types.
+  -- The original ident is stored for lookup in the constraint map.
+  | IGeneric TypeIdent
+  -- | Function (* -> *) node. Cannot be linked in any circumstances. Will be replaced by unique idents.
+  | IFun
   deriving (Eq, Show)
 
--- Same as `ImplicitShapeIdent`, except each `ImplicitFunIdent` has been mapped to a unique id.
--- Can be used in a `Map`.
+-- | `ImplicitShapeIdent` decorated with freshly generated values, where applicable.
 data ExplicitShapeIdent
-  = ExplicitExternalIdent TypeIdent
-  | ExplicitFunIdent Int
+  = EGround TypeIdent
+  | EGeneric Int TypeIdent
+  | EFun Int
   deriving (Eq, Show, Ord)
 
--- Builds a `Tree` instance, filling `Node`s with sentinel fresh idents that
--- should be added to the `ConstraintMap` with a function constraint.
+-- | Convert a single token to a tree.
+-- Leaves do not handle nested application - the first item is the root, all remaining items are its params.
 signatureToShape :: SignatureToken TypeIdent -> Tree ImplicitShapeIdent
-signatureToShape (SignatureLeaf (rootIdent :| args)) =
-  Node
-    (ImplicitExternalIdent rootIdent)
-    [Node (ImplicitExternalIdent a) [] | a <- args]
+signatureToShape (SignatureLeaf (ident :| [])) = Node (IGround ident) []
+signatureToShape (SignatureLeaf (root :| args)) =
+  Node (IGeneric root) [Node (IGround a) [] | a <- args]
 signatureToShape (SignatureNode left right) =
-  Node ImplicitFunIdent (map signatureToShape [left, right])
+  Node IFun (map signatureToShape [left, right])
 
--- Map external and implicit idents to a fresh set of `TypeIdent`s.
+type AddedFunIdents = [TypeIdent]
+
+type MappedGenericIdents = Map TypeIdent [TypeIdent]
+
+type MappedGroundIdents = Map TypeIdent TypeIdent
+
+-- | Map external and implicit idents to a fresh set of `TypeIdent`s.
+-- Returns the new tree and all transitions from old to new ids.
 refreshShapeIdents ::
      Tree ImplicitShapeIdent
-  -> (([TypeIdent], Map TypeIdent TypeIdent), Tree TypeIdent)
+  -> ((AddedFunIdents, MappedGenericIdents, MappedGroundIdents), Tree TypeIdent)
 refreshShapeIdents =
   first partitionExplicitShapeIdentMap .
   explicitTreeToTypeIdentTree . implicitTreeToExplicitTree
   where
-    implicitTreeToExplicitTree = snd . mapAccumL implicitToExplicit [0 ..]
+    implicitTreeToExplicitTree = snd . mapAccumL iToE [0 ..]
       where
-        implicitToExplicit identSource (ImplicitExternalIdent ident) =
-          (identSource, ExplicitExternalIdent ident)
-        implicitToExplicit (newIdent:identSource) ImplicitFunIdent =
-          (identSource, ExplicitFunIdent newIdent)
+        iToE is (IGround ident)      = (is, EGround ident)
+        iToE (i:is) (IGeneric ident) = (is, EGeneric i ident)
+        iToE (i:is) IFun             = (is, EFun i)
     explicitTreeToTypeIdentTree = replaceValues ['a' ..]
-          -- returns (addedFunIdents, externalIdentsMapping)
-    partitionExplicitShapeIdentMap ::
-         Map ExplicitShapeIdent TypeIdent
-      -> ([TypeIdent], Map TypeIdent TypeIdent)
-    partitionExplicitShapeIdentMap = Map.foldrWithKey pickDst (mempty, mempty)
+    partitionExplicitShapeIdentMap =
+      Map.foldrWithKey pickDst (mempty, mempty, mempty)
       where
-        pickDst k v (funIdents, externalIdentMapping) =
+        pickDst k v (funs, gens, grounds) =
           case k of
-            (ExplicitExternalIdent ident) ->
-              (funIdents, Map.insert ident v externalIdentMapping)
-            (ExplicitFunIdent i) -> (v : funIdents, externalIdentMapping)
+            (EGround ident) -> (funs, gens, Map.insert ident v grounds)
+            (EGeneric i ident) ->
+              (funs, Map.insertWith mappend ident [v] gens, grounds)
+            -- ^ TODO: replace `insertWith` with dedicated `alter` for maps of lists. Prefer consing over concatenating.
+            (EFun i) -> (v : funs, gens, grounds)
 
 arity :: LalaType -> Int
 arity = TypeEnv.arity . typeEnv

@@ -18,6 +18,8 @@ import           Type               (Type (..))
 t' :: Tree Char -> Map Char TypeTag -> LalaType
 t' s c = either error id (lalaType s c)
 
+leaf = (`Node` [])
+
 spec :: Spec
 spec = do
   describe "show" $ do
@@ -101,6 +103,25 @@ spec = do
         (t'
            (Node 'a' [Node 'b' []])
            [('a', TypeTag "CSeq"), ('b', TypeTag "CNum")])
+    it "many instances of one generic" $
+      fromParsedType
+        (ParsedType
+           [ ParsedConstraint (TypeTag "CSeq") (TypeVarId "s")
+           , ParsedConstraint (TypeTag "CNum") (TypeVarId "a")
+           , ParsedConstraint (TypeTag "CStr") (TypeVarId "b")
+           ]
+           (SignatureNode
+              (SignatureLeaf (TypeVarId "s" :| [TypeVarId "a"]))
+              (SignatureLeaf (TypeVarId "s" :| [TypeVarId "b"])))) `shouldBe`
+      Right
+        (t'
+           (Node 'a' [Node 'b' [leaf 'c'], Node 'd' [leaf 'e']])
+           [ ('a', TypeTag "F")
+           , ('b', TypeTag "CSeq")
+           , ('c', TypeTag "CNum")
+           , ('d', TypeTag "CSeq")
+           , ('e', TypeTag "CStr")
+           ])
   describe "unLalaType" $ do
     it "singleton" $
       unLalaType (t' (Node 'a' []) [('a', TypeTag "CNum")]) `shouldBe`
