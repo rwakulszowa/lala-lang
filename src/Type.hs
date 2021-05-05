@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DeriveTraversable     #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -8,9 +9,11 @@ module Type
   ) where
 
 import           Data.Data           (Data, Typeable, toConstr)
+import           Data.Hashable
+import           GHC.Generics
 import           Typiara.Data.Tagged (Tagged (..))
 import           Typiara.FT          (FT (..))
-import           Typiara.Typ         (Typ (..), UnifyError (..),
+import           Typiara.TypDef      (TypDef (..), UnifyError (..),
                                       UnifyResult (..))
 
 -- A simple set of types.
@@ -21,9 +24,19 @@ data Type a
   | CBool
   | CNum
   | CStr
-  deriving (Eq, Show, Read, Ord, Functor, Foldable, Traversable, Data, Typeable)
+  deriving ( Eq
+           , Show
+           , Read
+           , Ord
+           , Functor
+           , Foldable
+           , Traversable
+           , Data
+           , Typeable
+           , Generic
+           )
 
-instance Typ Type where
+instance TypDef Type where
   unify (CSeq a) (CSeq b) = Right (UnifyResult (CSeq a) [(a, b)])
   unify (CMaybe a) (CMaybe b) = Right (UnifyResult (CMaybe a) [(a, b)])
   unify x y =
@@ -31,7 +44,7 @@ instance Typ Type where
       then Right (UnifyResult x [])
       else Left (ConflictingTypes (tag x) (tag y))
 
-instance (Data a) => Tagged Type a where
+instance Tagged Type where
   tag = show . toConstr
   -- TODO: try to reuse the magic `gunfold` function from `Data.Data`.
   fromTag "CBool" []   = Just CBool
@@ -40,3 +53,5 @@ instance (Data a) => Tagged Type a where
   fromTag "CSeq" [a]   = Just (CSeq a)
   fromTag "CMaybe" [a] = Just (CMaybe a)
   fromTag _ _          = Nothing
+
+instance (Hashable a) => Hashable (Type a)

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f9a89ecfd0299d51f06b9e950d2c2aaf27b562e75e206548cdd247ca57a308a6
+-- hash: 194a36259b02d55fc478500dad979bc898027354066cd91c0665aa4ab6074c1b
 
 name:           lala-lang
 version:        0.1.0.0
@@ -52,6 +52,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , hashable
     , hspec
     , parsec
     , parsec-numbers
@@ -72,6 +73,7 @@ executable lala-lang-exe
   build-depends:
       base >=4.7 && <5
     , containers
+    , hashable
     , hspec
     , lala-lang
     , parsec
@@ -105,6 +107,7 @@ test-suite lala-lang-test
   build-depends:
       base >=4.7 && <5
     , containers
+    , hashable
     , hspec
     , lala-lang
     , parsec

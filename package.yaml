@@ -30,6 +30,7 @@ dependencies:
 - raw-strings-qq
 - text
 - process
+- hashable
 
 library:
   source-dirs: src

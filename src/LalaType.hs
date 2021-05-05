@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TupleSections     #-}
 
@@ -19,49 +20,47 @@ module LalaType
   , merge
   , MergeError
   , ApplyError
-  , decompose
-  , refresh
   , LalaType.apply
   ) where
 
-import qualified Data.List                as List
-import qualified Data.Map.Strict          as Map
-import qualified Data.Set                 as Set
-import qualified Data.Tree                as Tree
-import qualified Typiara.TypeEnv          as TypeEnv
+import qualified Data.List           as List
+import qualified Data.Map.Strict     as Map
+import qualified Data.Set            as Set
+import qualified Data.Tree           as Tree
+import qualified Typiara.Typ         as Typ
 
-import           Control.Monad            ((>=>))
-import           Data.List.NonEmpty       (NonEmpty (..))
-import           Data.Traversable         (mapAccumL)
-import           Text.Read                (readMaybe)
-
-import           Data.Bifunctor           (first, second)
-import           Data.Map                 (Map)
+import           Control.Monad       ((>=>))
+import           Data.Bifunctor      (first, second)
+import           Data.Hashable
+import           Data.List.NonEmpty  (NonEmpty (..))
+import           Data.Map            (Map)
 import           Data.Parse
-import           Data.Set                 (Set)
-import           Data.Tree                (Tree (..))
+import           Data.Set            (Set)
+import           Data.Traversable    (mapAccumL)
+import           Data.Tree           (Tree (..))
+import           GHC.Generics
 import           ParsedType
-import           Type                     (Type (..))
-import           Typiara                  (apply)
-import           Typiara.Data.Tagged      (Tagged (..))
-import           Typiara.FT               (FT (..))
-import           Typiara.Infer.Expression (InferExpressionError)
-import           Typiara.TypeEnv          (RootOrNotRoot (..), TypeEnv (..))
-import           Typiara.Utils            (allStrings, fromRight)
-import           Utils                    (fromListRejectOverlap, replaceValues,
-                                           unionMapsRejectOverlap)
+import           Text.Read           (readMaybe)
+import           Type                (Type (..))
+import           Typiara             (Typ (..), apply)
+import           Typiara.Data.Tagged (Tagged (..))
+import           Typiara.FT          (FT (..))
+import           Typiara.Infer       (InferExpressionError)
+import           Typiara.Utils       (allStrings, fromRight)
+import           Utils               (fromListRejectOverlap, replaceValues,
+                                      unionMapsRejectOverlap)
 
 -- A result of processing a raw `ParsedType`.
 -- Serves as an interface to the type checking world implemented by `Typiara`.
 newtype LalaType =
   LalaType
-    { typeEnv :: TypeEnv Type Char
+    { un :: Typ Type
     }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Generic)
 
 instance Show LalaType where
   show (LalaType te) =
-    let (shape, constraints) = TypeEnv.decompose te
+    let (shape, constraints) = Typ.decompose te
      in "LalaType " ++
         wrapParens (showMap constraints ++ " => " ++ showTagTree shape)
     where
@@ -75,7 +74,7 @@ instance Show LalaType where
       showTagTree (Node x cs) =
         wrapParens (unwords (show x : (showTagTree <$> cs)))
 
-un (LalaType x) = x
+instance Hashable LalaType
 
 -- TODO: sane char, enumerating from 'a' to 'z'
 type TypeIdent = Char
@@ -85,8 +84,7 @@ type ConstraintMap = Map TypeIdent TypeTag
 -- Smart constructor.
 lalaType :: Tree TypeIdent -> ConstraintMap -> Either String LalaType
 lalaType shape constraints =
-  LalaType <$>
-  first show (TypeEnv.fromEnumTree shape (mapTypeTag <$> constraints))
+  LalaType <$> first show (Typ.fromEnumTree shape (mapTypeTag <$> constraints))
   where
     mapTypeTag :: TypeTag -> String
           -- ^ unwrap a TypeTag and convert it to a `Tagged` representation.
@@ -97,19 +95,19 @@ lalaType shape constraints =
 
 -- | Reverse of `lalaType`.
 unLalaType :: LalaType -> (Tree TypeIdent, ConstraintMap)
-unLalaType = second (fmap unpackTypeTag) . TypeEnv.decompose . un
+unLalaType = second (fmap unpackTypeTag) . Typ.decompose . un
   where
     unpackTypeTag :: String -> TypeTag
           -- ^ Dual to `mapTypeTag` above.
     unpackTypeTag ('T':'.':t) = TypeTag t
     unpackTypeTag t           = TypeTag t
 
-singleton = LalaType . TypeEnv.singleton
+singleton = LalaType . Typ.singleton
 
 -- | Exported for convenience - allows one to avoid importing `T` explicitly.
 singletonT = singleton . T
 
-empty = LalaType (TypeEnv.singleton Nil)
+empty = LalaType (Typ.singleton Nil)
 
 -- `ParsedType` infers shape from the input string, but doesn't perform any
 -- logic on the values.
@@ -174,8 +172,6 @@ fromString = parseString >=> fromParsedType
 
 unParse = unParseType . intoParsedType
 
-refresh = LalaType . TypeEnv.refreshTypeEnv . un
-
 -- | Idents provided by the user, enriched with implicit data.
 data ImplicitShapeIdent
   -- | Ground (right-most) type ident. Those are the only idents that can be
@@ -238,29 +234,19 @@ refreshShapeIdents =
             (EFun i) -> (v : funs, gens, grounds)
 
 arity :: LalaType -> Int
-arity = TypeEnv.arity . typeEnv
+arity = Typ.arity . un
 
 newtype MergeError =
-  MergeError (TypeEnv.UnifyEnvError Char)
+  MergeError Typ.MergeError
   deriving (Eq, Show)
 
 merge :: LalaType -> LalaType -> Either MergeError LalaType
-merge (LalaType x) (LalaType y) =
-  LalaType <$> first MergeError (TypeEnv.unifyEnv Root x y)
+merge (LalaType x) (LalaType y) = LalaType <$> first MergeError (Typ.merge x y)
 
 newtype ApplyError =
-  ApplyError (InferExpressionError Char)
+  ApplyError InferExpressionError
   deriving (Eq, Show)
 
 apply :: LalaType -> LalaType -> Either ApplyError LalaType
 apply (LalaType f) (LalaType x) =
   LalaType <$> first ApplyError (Typiara.apply f [x])
-
--- TODO: use `TypeEnv.popArg`.
-decompose :: LalaType -> (String, LalaType, LalaType)
-decompose (LalaType t) =
-  let r = TypeEnv.getRoot t
-   in case r of
-        (F a b) -> (tag r, LalaType (pick' a), LalaType (pick' b))
-  where
-    pick' = TypeEnv.pick t . NotRoot
