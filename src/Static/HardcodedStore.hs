@@ -66,7 +66,7 @@ store = jsItems <> lalaItems
       , ( "Head"
         , Item
             { typ = t "CSeq s, CMaybe m, Nil a => s a -> m a"
-            , impl = JsLambda ["seq"] "seq[0]"
+            , impl = JsLambda ["seq"] "seq.length > 0 ? seq[0] : null"
             })
       , ( "Tail"
         , Item
