@@ -16,7 +16,7 @@ dependencyCount :: Char -> [Int] -> Int
 dependencyCount nodeId deps = 1 + sum deps
 
 spec :: Spec
-spec =
+spec = do
   describe "traverseAccum" $ do
     it "empty" $
       traverseAccum dependencyCount (DependencyGraph []) `shouldBe` Right []
@@ -28,3 +28,8 @@ spec =
         dependencyCount
         (DependencyGraph [('A', ['B']), ('B', ['C']), ('C', [])]) `shouldBe`
       Right [('A', 3), ('B', 2), ('C', 1)]
+  describe "topologicalOrder" $ do
+    it "interconnected triple" $
+      topologicalOrder
+        (DependencyGraph [('A', ['B', 'C']), ('B', ['C']), ('C', [])]) `shouldBe`
+      Right "ABC"

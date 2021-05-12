@@ -4,6 +4,7 @@ module Data.DependencyGraph
   ( DependencyGraph(..)
   , DependencyGraphError(..)
   , traverseAccum
+  , topologicalOrder
   ) where
 
 import           Control.Monad   ((>>=))

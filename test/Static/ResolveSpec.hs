@@ -6,6 +6,7 @@ module Static.ResolveSpec
   ) where
 
 import           Data.Map
+import           Lang
 import           LExpr
 import           Static.Resolve
 import           Test.Hspec
@@ -33,3 +34,10 @@ spec = do
         -- it to the top of the list.
         Right
           (Resolved {expr = e, bindings = [getBinding "Add", getBinding "Inc"]})
+  it "resolveStore" $
+    -- A simpler store forming a simle dependency graph.
+   do
+    let store' = store `restrictKeys` ["Inc", "Add"]
+    -- Add should appear above Inc.
+    resolveStore store' Js `shouldBe`
+      Right (ResolvedStore Js [getBinding "Add", getBinding "Inc"])

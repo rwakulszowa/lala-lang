@@ -1,9 +1,13 @@
 module Static.Resolve where
 
-import           Data.Foldable   (toList)
-import qualified Data.Map.Strict as M
-import qualified Data.OrderedMap as OM
-import qualified Data.Text       as T
+import           Data.Bifunctor       (first)
+import qualified Data.DependencyGraph as DG
+import           Data.Foldable        (toList)
+import qualified Data.Map.Strict      as M
+import           Data.Maybe
+import qualified Data.OrderedMap      as OM
+import qualified Data.Text            as T
+import           Lang
 import           LExpr
 import           Static.Impl
 import           Static.Store
@@ -55,3 +59,44 @@ resolve s le = do
         []  -> Right bindings'
         -- Handle children.
         dug -> OM.rightBiasedConcat <$> traverse (go bindings') dug
+
+-- | Store, where all items have been converted to `lang`.
+-- Items incompatible with `lang` are dropped.
+-- After resoltion, there will be at most one item per reference.
+--
+-- NOTE: even though it is not used anywhere (yet?), it is possible to define
+-- multiple items per reference, in the same language. The consequence is that
+-- there may exist multiple ways to resolve each set of items which, in turn, means
+-- there are many `ResolvedStore`s per `Store`.
+-- Either support such scenarios or reject them during construction.
+--
+-- TODO: remove the other resolution method. It requires too much repetitive work.
+data ResolvedStore =
+  ResolvedStore
+    { rlang     :: Lang
+    , rbindings :: [Binding]
+    }
+  deriving (Eq, Show, Ord)
+
+resolveStore :: Store -> Lang -> Either String ResolvedStore
+resolveStore s l =
+  ResolvedStore l . fmap bind <$>
+  first show (reverse <$> DG.topologicalOrder depGraph)
+  where
+    substore = M.filter matchesLang s
+      where
+        matchesLang item = lang (impl item) `elem` [l, Lala]
+    depGraph = DG.DependencyGraph (directItemDeps <$> substore)
+      where
+        directItemDeps = directDeps . impl
+    bind k = Binding {key = k, item = substore M.! k}
+
+-- | Turn a ResolvedStore into a source file.
+-- Transpilation is never expected to fail - incompatible items are expected to have been filtered out during
+-- construction
+-- (TODO: hide the default constructor)
+rStoreToSrc :: ResolvedStore -> T.Text
+rStoreToSrc (ResolvedStore rlang rbindings) = T.unlines (bindb <$> rbindings)
+  where
+    bindb (Binding id item) =
+      fromJust $ bind Js id (fromJust $ tosrc rlang (impl item))
