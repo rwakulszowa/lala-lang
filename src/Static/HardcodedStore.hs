@@ -42,6 +42,11 @@ store = jsItems <> lalaItems
             , impl = JsLambda ["x", "y"] "x * y"
             })
       -- Strings
+      , ( "Show"
+        , Item
+            { typ = t "Nil a, CStr s => a -> s"
+            , impl = JsLambda ["x"] "x.toString()"
+            })
       , ( "Lower"
         , Item
             { typ = t "CStr a => a -> a"
@@ -108,6 +113,22 @@ store = jsItems <> lalaItems
             { typ = t "CMaybe m, Nil a, Nil b => m a -> (a -> m b) -> m b"
             , impl = JsLambda ["m", "f"] "m && f(m)"
             })
+      -- Pairs
+      , ( "Pair"
+        , Item
+            { typ = t "Nil a, Nil b, CProd p => a -> b -> p a b"
+            , impl = JsLambda ["a", "b"] "[a, b]"
+            })
+      , ( "Swap"
+        , Item
+            { typ = t "Nil a, Nil b, CProd p => p a b -> p b a"
+            , impl = JsLambda ["x"] "[x[1], x[0]]"
+            })
+      , ( "Fst"
+        , Item
+            { typ = t "Nil a, Nil b, CProd p => p a b -> a"
+            , impl = JsLambda ["x"] "x[0]"
+            })
       ]
     lalaItems
       -- HOFs
@@ -133,7 +154,7 @@ store = jsItems <> lalaItems
             { typ = t "Nil a, Nil b => (a -> a -> b) -> a -> b"
             , impl = LalaImpl ["f", "x"] (e "f x x")
             })
-      , ( "Swap"
+      , ( "Flip"
         , Item
             { typ = t "Nil a, Nil b, Nil c => (a -> b -> c) -> b -> a -> c"
             , impl = LalaImpl ["f", "x", "y"] (e "f y x")
@@ -146,5 +167,38 @@ store = jsItems <> lalaItems
         , Item
             { typ = t "CSeq s, Nil a, CNum n => s a -> n"
             , impl = LalaImpl [] (e "Foldl (Compose Const Inc) 0")
+            })
+      -- Pairs
+      -- Inspired by Data.Bifunctor.
+      , ( "Snd"
+        , Item
+            { typ = t "Nil a, Nil b, CProd p => p a b -> b"
+            , impl = LalaImpl ["x"] (e "Fst (Swap x)")
+            })
+      , ( "Bimap"
+        , Item
+            { typ =
+                t
+                  "Nil a, Nil b, Nil c, Nil d, CProd p => (a -> c) -> (b -> d) -> p a b -> p c d"
+            , impl =
+                LalaImpl ["fa", "fb", "x"] (e "Pair (fa (Fst x)) (fb (Snd x))")
+            })
+      , ( "First"
+        , Item
+            { typ =
+                t "Nil a, Nil b, Nil c, CProd p => (a -> c) -> p a b -> p c b"
+            , impl = LalaImpl ["f"] (e "Bimap f Id")
+            })
+      , ( "Second"
+        , Item
+            { typ =
+                t "Nil a, Nil b, Nil c, CProd p => (b -> c) -> p a b -> p a c"
+            , impl = LalaImpl ["f"] (e "Bimap Id f")
+            })
+      , ( "Uncurry"
+        , Item
+            { typ =
+                t "Nil a, Nil b, Nil c, CProd p => (a -> b -> c) -> p a b -> c"
+            , impl = LalaImpl ["f", "p"] (e "f (Fst p) (Snd p)")
             })
       ]

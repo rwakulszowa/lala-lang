@@ -2,19 +2,21 @@
 {-# LANGUAGE TupleSections     #-}
 
 -- | Tests for top level functionality.
+-- Use the real HardcodedStore.
 module LalaSpec
   ( spec
   ) where
 
-import qualified Data.Text         as T
+import qualified Data.Text             as T
 import           Lala
-import           LalaType          (singletonT)
+import           LalaType              (singletonT)
 import           Lang
 import           LExpr
+import           Static.HardcodedStore
 import           System.Exit
 import           System.Process
 import           Test.Hspec
-import           Testing
+import           Testing               (parseT)
 import           Text.RawString.QQ
 import           Type
 import           Value
@@ -51,4 +53,10 @@ spec = do
       (`shouldBe` Right (singletonT CStr, "1"))
     it "Maybe" $
       go (ref "Head" |< ref "Nil") >>=
-      (`shouldBe` Right (parseT "CMaybe m, Nil a => m a", "undefined"))
+      (`shouldBe` Right (parseT "CMaybe m, Nil a => m a", "null"))
+    it "Pair" $
+      go
+        (ref "First" |< ref "Inc" |<
+         (ref "Pair" |< intLiteral 1 |< strLiteral "abc")) >>=
+      (`shouldBe` Right
+                    (parseT "CProd p, CNum a, CStr b => p a b", "[ 2, 'abc' ]"))
