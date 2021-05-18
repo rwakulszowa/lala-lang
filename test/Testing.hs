@@ -8,8 +8,8 @@ module Testing
   ) where
 
 import           Data.Parse   (parseString)
-import           LalaType     (LalaType, fromString)
 import           LExpr
+import           LalaType     (LalaType, fromString)
 import           Static.Impl
 import           Static.Store
 import           Value

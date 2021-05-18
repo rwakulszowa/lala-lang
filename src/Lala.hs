@@ -7,9 +7,9 @@ module Lala
 import           Data.Bifunctor (first)
 import           Data.Parse
 import qualified Data.Text      as T
+import           LExpr
 import           LalaType
 import           Lang
-import           LExpr
 import           Static
 import           Static.Store
 import           Value

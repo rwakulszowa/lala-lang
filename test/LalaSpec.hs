@@ -8,10 +8,10 @@ module LalaSpec
   ) where
 
 import qualified Data.Text             as T
+import           LExpr
 import           Lala
 import           LalaType              (singletonT)
 import           Lang
-import           LExpr
 import           Static.HardcodedStore
 import           System.Exit
 import           System.Process

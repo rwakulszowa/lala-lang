@@ -7,8 +7,8 @@ import qualified Data.Map.Strict      as M
 import           Data.Maybe
 import qualified Data.OrderedMap      as OM
 import qualified Data.Text            as T
-import           Lang
 import           LExpr
+import           Lang
 import           Static.Impl
 import           Static.Store
 import           Value

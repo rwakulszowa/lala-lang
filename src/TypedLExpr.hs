@@ -2,8 +2,8 @@ module TypedLExpr where
 
 import           Data.List.NonEmpty
 import           Data.Parse
-import           LalaType
 import           LExpr
+import           LalaType
 import           ParsedType
 import           Text.ParserCombinators.Parsec
 import           Value

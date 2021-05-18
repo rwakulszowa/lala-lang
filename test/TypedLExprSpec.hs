@@ -6,8 +6,8 @@ module TypedLExprSpec
 
 import           Data.List.NonEmpty
 import           Data.Parse
-import           LalaType           as LT
 import           LExpr
+import           LalaType           as LT
 import           Test.Hspec
 import           Type
 import           TypedLExpr

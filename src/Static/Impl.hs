@@ -14,8 +14,8 @@ import           Data.List.NonEmpty (NonEmpty (..))
 import           Data.Maybe
 import qualified Data.Set           as S
 import qualified Data.Text          as T
-import           Lang
 import           LExpr
+import           Lang
 import           Value
 
 data Impl

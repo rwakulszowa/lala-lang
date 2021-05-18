@@ -11,6 +11,7 @@ module LalaType
   , singleton
   , singletonT
   , empty
+  , makeFun
   , lalaType
   , unLalaType
   , unParse
@@ -20,13 +21,16 @@ module LalaType
   , merge
   , MergeError
   , ApplyError
+  , ApplyAtError
   , LalaType.apply
+  , LalaType.applyAt
   ) where
 
 import qualified Data.List           as List
 import qualified Data.Map.Strict     as Map
 import qualified Data.Set            as Set
 import qualified Data.Tree           as Tree
+import qualified Typiara
 import qualified Typiara.Typ         as Typ
 
 import           Control.Monad       ((>=>))
@@ -108,6 +112,11 @@ singleton = LalaType . Typ.singleton
 singletonT = singleton . T
 
 empty = LalaType (Typ.singleton Nil)
+
+-- | Build a function consisting only of Nils and Fs.
+-- Useful for building a linked shape, before applying specific constraints.
+makeFun :: [[Int]] -> LalaType
+makeFun = LalaType . Typ.makeFun
 
 -- `ParsedType` infers shape from the input string, but doesn't perform any
 -- logic on the values.
@@ -250,3 +259,11 @@ newtype ApplyError =
 apply :: LalaType -> LalaType -> Either ApplyError LalaType
 apply (LalaType f) (LalaType x) =
   LalaType <$> first ApplyError (Typiara.apply f [x])
+
+newtype ApplyAtError =
+  ApplyAtError Typiara.ApplyAtError
+  deriving (Eq, Show)
+
+applyAt :: LalaType -> LalaType -> Int -> Either ApplyAtError LalaType
+applyAt (LalaType f) (LalaType x) i =
+  LalaType <$> first ApplyAtError (Typiara.applyAt f x i)

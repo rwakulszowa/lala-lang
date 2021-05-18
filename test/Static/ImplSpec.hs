@@ -5,9 +5,9 @@ module Static.ImplSpec
   ( spec
   ) where
 
+import           LExpr
 import           LalaType    (fromString, singletonT)
 import           Lang
-import           LExpr
 import           Static.Impl
 import           Test.Hspec
 import           Type

@@ -8,8 +8,8 @@ module Static.HardcodedStore
   ) where
 
 import           Data.Parse
-import           LalaType
 import           LExpr
+import           LalaType
 import           Static.Impl
 import           Static.Store
 import           Value

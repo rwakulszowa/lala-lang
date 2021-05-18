@@ -6,8 +6,8 @@ module Static.ResolveSpec
   ) where
 
 import           Data.Map
-import           Lang
 import           LExpr
+import           Lang
 import           Static.Resolve
 import           Test.Hspec
 import           Testing

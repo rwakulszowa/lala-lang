@@ -137,3 +137,10 @@ spec = do
            , ('d', TypeTag "CNum")
            ]) `shouldBe`
       "CNum B, CSeq C, CNum D => B -> C D"
+  describe "applyAt" $ do
+    let applyAt' x i f = applyAt f x i
+    it "(a -> b -> a) | _ Num | Str" $ do
+      let tn = singletonT CNum
+      let ts = singletonT CStr
+      let tf = makeFun [[0, 1, 0]]
+      (pure tf >>= applyAt' tn 1 >>= applyAt' ts 0) `shouldBe` Right ts

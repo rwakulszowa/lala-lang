@@ -5,8 +5,8 @@ module LExprSpec
   ) where
 
 import           Data.Parse
-import           LalaType   (fromString, singletonT)
 import           LExpr
+import           LalaType   (fromString, singletonT)
 import           Test.Hspec
 import           Type
 
