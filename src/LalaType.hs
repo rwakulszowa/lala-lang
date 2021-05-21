@@ -24,6 +24,7 @@ module LalaType
   , ApplyAtError
   , LalaType.apply
   , LalaType.applyAt
+  , LalaType.reorder
   ) where
 
 import qualified Data.List           as List
@@ -267,3 +268,6 @@ newtype ApplyAtError =
 applyAt :: LalaType -> LalaType -> Int -> Either ApplyAtError LalaType
 applyAt (LalaType f) (LalaType x) i =
   LalaType <$> first ApplyAtError (Typiara.applyAt f x i)
+
+reorder :: LalaType -> [Int] -> Maybe LalaType
+reorder (LalaType f) o = LalaType <$> Typiara.reorder f o
