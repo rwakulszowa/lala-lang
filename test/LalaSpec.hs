@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections     #-}
 
@@ -7,12 +8,15 @@ module LalaSpec
   ( spec
   ) where
 
+import           Data.Maybe
 import qualified Data.Text             as T
 import           LExpr
 import           Lala
-import           LalaType              (singletonT)
+import           LalaType              (makeFun, singletonT)
 import           Lang
 import           Static.HardcodedStore
+import           Static.Impl
+import           Static.Store
 import           System.Exit
 import           System.Process
 import           Test.Hspec
@@ -31,11 +35,20 @@ eval content = do
       then Right (init stdout)
       else Left (show (exitCode, stderr, content))
 
+store' =
+  store <>
+  [ ( "Reorder_10"
+    , Item
+        { typ = makeFun [[0, 1, 2], [1, 0, 2]]
+        , impl = fromJust (reorderF [1, 0])
+        })
+  ]
+
 spec :: Spec
 spec = do
   describe "process" $ do
     let go e =
-          case process store Js e of
+          case process store' Js e of
             (Right (typ, src)) -> do
               ret <- eval src
               return $ (typ, ) <$> ret
@@ -60,3 +73,6 @@ spec = do
          (ref "Pair" |< intLiteral 1 |< strLiteral "abc")) >>=
       (`shouldBe` Right
                     (parseT "CProd p, CNum a, CStr b => p a b", "[ 2, 'abc' ]"))
+    it "Reorder" $
+      go ((ref "Reorder_10" |< ref "Const") |< intLiteral 1 |< strLiteral "abc") >>=
+      (`shouldBe` Right (parseT "CStr a => a", "abc"))

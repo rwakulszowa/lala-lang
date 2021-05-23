@@ -30,3 +30,12 @@ spec = do
       it "application" $
         tosrc Lala (LalaImpl ["x", "y"] (ref "Add" |< ref "x" |< ref "y")) `shouldBe`
         Just "x y -> (Add x y)"
+    describe "reorderF" $ do
+      it "singleton" $
+        reorderF [] `shouldBe` Just (LalaImpl ["fun"] (ref "fun"))
+      it "a b c -> c a b" $
+        reorderF [2, 0, 1] `shouldBe`
+        Just
+          (LalaImpl
+             ["fun", "a", "b", "c"]
+             (ref "fun" |< ref "c" |< ref "a" |< ref "b"))
