@@ -13,6 +13,7 @@ import           LalaType
 import           ParsedType         (ParsedConstraint (..), ParsedType (..),
                                      SignatureToken (..), TypeTag (..),
                                      TypeVarId (..))
+import           Testing            (parseT)
 import           Type               (Type (..))
 
 t' :: Tree Char -> Map Char TypeTag -> LalaType
@@ -144,3 +145,13 @@ spec = do
       let ts = singletonT CStr
       let tf = makeFun [[0, 1, 0]]
       (pure tf >>= applyAt' tn 1 >>= applyAt' ts 0) `shouldBe` Right ts
+  describe "reorderT" $ do
+    it "Foldl_120" $
+      -- Validate that reordering doesn't lose any information.
+      -- The chosen function and order are non trivial.
+     do
+      let tFoldl =
+            parseT "CSeq s, Nil a, Nil b => (a -> b -> a) -> a -> s b -> a"
+      let (Just tRe) = reorderT [1, 2, 0]
+      tRe `apply` tFoldl `shouldBe`
+        Right (parseT "CSeq s, Nil a, Nil b => a -> s b -> (a -> b -> a) -> a")

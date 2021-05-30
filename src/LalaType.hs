@@ -24,6 +24,7 @@ module LalaType
   , ApplyAtError
   , LalaType.apply
   , LalaType.applyAt
+  , LalaType.reorderT
   , LalaType.reorder
   ) where
 
@@ -47,7 +48,7 @@ import           GHC.Generics
 import           ParsedType
 import           Text.Read           (readMaybe)
 import           Type                (Type (..))
-import           Typiara             (Typ (..), apply)
+import           Typiara             (ApplyError (..), Typ (..), apply)
 import           Typiara.Data.Tagged (Tagged (..))
 import           Typiara.FT          (FT (..))
 import           Typiara.Infer       (InferExpressionError)
@@ -253,13 +254,8 @@ newtype MergeError =
 merge :: LalaType -> LalaType -> Either MergeError LalaType
 merge (LalaType x) (LalaType y) = LalaType <$> first MergeError (Typ.merge x y)
 
-newtype ApplyError =
-  ApplyError InferExpressionError
-  deriving (Eq, Show)
-
 apply :: LalaType -> LalaType -> Either ApplyError LalaType
-apply (LalaType f) (LalaType x) =
-  LalaType <$> first ApplyError (Typiara.apply f [x])
+apply (LalaType f) (LalaType x) = LalaType <$> Typiara.apply f [x]
 
 newtype ApplyAtError =
   ApplyAtError Typiara.ApplyAtError
@@ -268,6 +264,9 @@ newtype ApplyAtError =
 applyAt :: LalaType -> LalaType -> Int -> Either ApplyAtError LalaType
 applyAt (LalaType f) (LalaType x) i =
   LalaType <$> first ApplyAtError (Typiara.applyAt f x i)
+
+reorderT :: [Int] -> Maybe LalaType
+reorderT o = LalaType <$> Typiara.reorderT o
 
 reorder :: LalaType -> [Int] -> Maybe LalaType
 reorder (LalaType f) o = LalaType <$> Typiara.reorder f o
