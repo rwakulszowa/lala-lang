@@ -37,5 +37,5 @@ spec = do
         reorderF [2, 0, 1] `shouldBe`
         Just
           (LalaImpl
-             ["fun", "a", "b", "c"]
-             (ref "fun" |< ref "c" |< ref "a" |< ref "b"))
+             ["fun", "c", "a", "b"]
+             (ref "fun" |< ref "a" |< ref "b" |< ref "c"))

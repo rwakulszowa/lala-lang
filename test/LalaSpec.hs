@@ -12,7 +12,7 @@ import           Data.Maybe
 import qualified Data.Text             as T
 import           LExpr
 import           Lala
-import           LalaType              (makeFun, singletonT)
+import           LalaType
 import           Lang
 import           Static.HardcodedStore
 import           Static.Impl
@@ -38,9 +38,11 @@ eval content = do
 store' =
   store <>
   [ ( "Reorder_10"
+    , Item {typ = fromJust (reorderT [1, 0]), impl = fromJust (reorderF [1, 0])})
+  , ( "Reorder_201"
     , Item
-        { typ = makeFun [[0, 1, 2], [1, 0, 2]]
-        , impl = fromJust (reorderF [1, 0])
+        { typ = fromJust (reorderT [2, 0, 1])
+        , impl = fromJust (reorderF [2, 0, 1])
         })
   ]
 
@@ -73,6 +75,15 @@ spec = do
          (ref "Pair" |< intLiteral 1 |< strLiteral "abc")) >>=
       (`shouldBe` Right
                     (parseT "CProd p, CNum a, CStr b => p a b", "[ 2, 'abc' ]"))
-    it "Reorder" $
-      go ((ref "Reorder_10" |< ref "Const") |< intLiteral 1 |< strLiteral "abc") >>=
-      (`shouldBe` Right (parseT "CStr a => a", "abc"))
+    describe "Reorder" $
+      -- Validate that reorder function and implementation are in sync.
+     do
+      it "Const, [1, 0]" $
+        go
+          ((ref "Reorder_10" |< ref "Const") |< intLiteral 1 |< strLiteral "abc") >>=
+        (`shouldBe` Right (parseT "CStr a => a", "abc"))
+      it "Foldl, [2, 0, 1]" $
+        go
+          ((ref "Reorder_201" |< ref "Foldl") |< ref "Nil" |< ref "Add" |<
+           intLiteral 0) >>=
+        (`shouldBe` Right (parseT "CNum a => a", "0"))

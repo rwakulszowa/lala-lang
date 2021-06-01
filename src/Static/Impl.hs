@@ -49,14 +49,17 @@ bind _ _ _     = Nothing
 -- returns the same function with arguments reordered.
 -- Nothing if order is not a permutation of [0 .. n].
 -- TODO: a type safe variant of permuations of [0 .. n].
+--
+-- Changes the application order of incoming arguments, leaving inner application order intact.
+-- `reorderF (a -> b -> c) [1, 0] => (b -> a -> c)`
 reorderF :: [Int] -> Maybe Impl
 reorderF order =
   if sort order /= naturalOrder
     then Nothing
     else Just
            (LalaImpl
-              ("fun" : (mkid <$> naturalOrder))
-              (LExpr (LExprLeaf . Ref <$> "fun" :| (mkid <$> order))))
+              ("fun" : (mkid <$> order))
+              (LExpr (LExprLeaf . Ref <$> "fun" :| (mkid <$> naturalOrder))))
   where
     naturalOrder = [0 .. length order - 1]
     mkid i = T.pack [toEnum (i + 97)]
