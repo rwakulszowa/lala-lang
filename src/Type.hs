@@ -47,12 +47,12 @@ data Type a
 
 instance TypDef Type where
   unify (CProd a b) (CProd c d) =
-    Right (UnifyResult (CProd a b) [(a, c), (b, d)])
-  unify (CSeq a) (CSeq b) = Right (UnifyResult (CSeq a) [(a, b)])
-  unify (CMaybe a) (CMaybe b) = Right (UnifyResult (CMaybe a) [(a, b)])
+    Right (UnifyResult (CProd a b) [(a, c), (b, d)] [])
+  unify (CSeq a) (CSeq b) = Right (UnifyResult (CSeq a) [(a, b)] [])
+  unify (CMaybe a) (CMaybe b) = Right (UnifyResult (CMaybe a) [(a, b)] [])
   unify x y =
     if x == y
-      then Right (UnifyResult x [])
+      then Right (UnifyResult x [] [])
       else Left (ConflictingTypes (tag x) (tag y))
 
 instance Tagged Type where
