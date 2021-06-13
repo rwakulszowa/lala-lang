@@ -32,7 +32,7 @@ spec = do
         (t'
            (Node 'a' [Node 'b' [], Node 'b' []])
            [('a', TypeTag "F"), ('b', TypeTag "CNum")]) `shouldBe`
-      "LalaType (F 0, T.CNum 1 => (0 1 1))"
+      "LalaType (T.CNum 1 => (1 -> 1))"
     it "nested" $
       show
         (t'
@@ -42,7 +42,7 @@ spec = do
            , ('c', TypeTag "Nil")
            , ('d', TypeTag "CNum")
            ]) `shouldBe`
-      "LalaType (F 0, T.CSeq 1, Nil 2, T.CNum 3 => (0 (1 2) 3))"
+      "LalaType (T.CSeq 1, Nil 2, T.CNum 3 => ((1 2) -> 3))"
   describe "fromParsedType" $ do
     it "singleton" $
       fromParsedType

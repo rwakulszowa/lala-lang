@@ -66,17 +66,21 @@ newtype LalaType =
 
 instance Show LalaType where
   show (LalaType te) =
-    let (shape, constraints) = Typ.decompose te
-     in "LalaType " ++
-        wrapParens (showMap constraints ++ " => " ++ showTagTree shape)
+    "LalaType " <>
+    wrapParens (showMap constraints <> " => " <> showTagTree shape)
     where
+      (shape, constraints) = Typ.decompose te
       wrapParens s = "(" ++ s ++ ")"
       showMap :: Map.Map Int String -> String
       showMap m =
         List.intercalate
           ", "
-          [tag ++ " " ++ show var | (var, tag) <- Map.assocs m]
+          [tag ++ " " ++ show var | (var, tag) <- Map.assocs m, tag /= "F"]
       showTagTree (Node x []) = show x
+      showTagTree (Node x cs)
+        | (constraints Map.! x) == "F" =
+          let [f, x] = cs
+           in wrapParens (showTagTree f <> " -> " <> showTagTree x)
       showTagTree (Node x cs) =
         wrapParens (unwords (show x : (showTagTree <$> cs)))
 
