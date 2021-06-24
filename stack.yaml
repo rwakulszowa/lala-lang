@@ -18,7 +18,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-13.20
+resolver: lts-16.6
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,7 +40,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
   - git: https://github.com/rwakulszowa/typiara.git
-    commit: 5ce011d781238ce66cdc278830261c64b58aee8c
+    commit: f00e0ab580225b9c93465e2ebbf6969c0f02e815
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -10,14 +10,14 @@ packages:
     git: https://github.com/rwakulszowa/typiara.git
     pantry-tree:
       size: 1945
-      sha256: b97c9475bea61ee29b846df4a8d8a91e235284f042c65af8eaee066dc9d3a4f1
-    commit: 5ce011d781238ce66cdc278830261c64b58aee8c
+      sha256: 2a2799dbc46b8fcbb70ceeafdeb3a96a40a8f8569f552f6bddd1983bf25e04c5
+    commit: f00e0ab580225b9c93465e2ebbf6969c0f02e815
   original:
     git: https://github.com/rwakulszowa/typiara.git
-    commit: 5ce011d781238ce66cdc278830261c64b58aee8c
+    commit: f00e0ab580225b9c93465e2ebbf6969c0f02e815
 snapshots:
 - completed:
-    size: 498167
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/13/20.yaml
-    sha256: cda928d57b257a5f17bcad796843c9daa674fef47d600dbea3aa7b0e49d64a11
-  original: lts-13.20
+    size: 531718
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/6.yaml
+    sha256: 230a7266fc11f76222bd3bb68e9503ed11d553060a752f164bff6753ed03e271
+  original: lts-16.6
