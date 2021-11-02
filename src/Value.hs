@@ -50,11 +50,7 @@ literalP :: Parser Literal
 literalP = strLiteralP <|> intLiteralP
   where
     strLiteralP = StrLiteral . T.pack <$> stringLiteral
-    intLiteralP = do
-      sign <- optionMaybe $ char '-'
-      let signMultiplier = maybe 1 (const $ -1) sign
-      num <- integer
-      return $ IntLiteral (num * signMultiplier)
+    intLiteralP = IntLiteral <$> signedInteger
 
 instance Unparse Literal where
   unparse (StrLiteral s) = "\"" <> s <> "\""

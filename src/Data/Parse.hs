@@ -11,7 +11,9 @@ module Data.Parse
   , identifier
   , stringLiteral
   , integer
+  , signedInteger
   , reservedOp
+  , symbol
   , Unparse(..)
   ) where
 
@@ -60,6 +62,14 @@ stringLiteral = Token.stringLiteral lexer
 integer = Token.integer lexer
 
 reservedOp = Token.reservedOp lexer
+
+symbol = Token.symbol lexer
+
+signedInteger = do
+  sign <- optionMaybe $ char '-'
+  let signMultiplier = maybe 1 (const $ -1) sign
+  num <- integer
+  return $ num * signMultiplier
 
 -- | Un-Parseable types.
 -- unparse . parse = id
