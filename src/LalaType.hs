@@ -19,6 +19,7 @@ module LalaType
   , fromString
   , arity
   , merge
+  , mergeNth
   , MergeError
   , ApplyError
   , ApplyAtError
@@ -257,6 +258,10 @@ newtype MergeError =
 
 merge :: LalaType -> LalaType -> Either MergeError LalaType
 merge (LalaType x) (LalaType y) = LalaType <$> first MergeError (Typ.merge x y)
+
+mergeNth :: Int -> LalaType -> LalaType -> Either MergeError LalaType
+mergeNth i (LalaType x) (LalaType y) =
+  LalaType <$> first MergeError (Typ.mergeNth i x y)
 
 apply :: LalaType -> LalaType -> Either ApplyError LalaType
 apply (LalaType f) (LalaType x) = LalaType <$> Typiara.apply f [x]
