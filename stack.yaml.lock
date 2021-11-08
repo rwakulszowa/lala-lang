@@ -10,11 +10,11 @@ packages:
     git: https://github.com/rwakulszowa/typiara.git
     pantry-tree:
       size: 1945
-      sha256: 12df253361e1b38739e1932992113dbe18c7a5d5e588ddd41487750f755115c2
-    commit: 72b914738cbce733950697d9047662ed9e1ff106
+      sha256: 590d713117c397e7ddd72bcaf6897afacfa5a2ee6c9444b8dec16ea1a1c090e8
+    commit: 6d39fadd60eb0d018c251efdc799c503b56d330b
   original:
     git: https://github.com/rwakulszowa/typiara.git
-    commit: 72b914738cbce733950697d9047662ed9e1ff106
+    commit: 6d39fadd60eb0d018c251efdc799c503b56d330b
 snapshots:
 - completed:
     size: 531718

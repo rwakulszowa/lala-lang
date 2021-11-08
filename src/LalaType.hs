@@ -27,6 +27,7 @@ module LalaType
   , LalaType.applyAt
   , LalaType.reorderT
   , LalaType.reorder
+  , LalaType.popArgs
   ) where
 
 import qualified Data.List           as List
@@ -279,3 +280,6 @@ reorderT o = LalaType <$> Typiara.reorderT o
 
 reorder :: LalaType -> [Int] -> Maybe LalaType
 reorder (LalaType f) o = LalaType <$> Typiara.reorder f o
+
+popArgs :: LalaType -> [LalaType]
+popArgs (LalaType t) = LalaType <$> Typiara.popArgs t

@@ -40,7 +40,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
   - git: https://github.com/rwakulszowa/typiara.git
-    commit: 72b914738cbce733950697d9047662ed9e1ff106
+    commit: 6d39fadd60eb0d018c251efdc799c503b56d330b
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
