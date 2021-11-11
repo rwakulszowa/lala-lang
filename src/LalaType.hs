@@ -12,6 +12,7 @@ module LalaType
   , singletonT
   , empty
   , makeFun
+  , fun
   , lalaType
   , unLalaType
   , unParse
@@ -125,6 +126,10 @@ empty = LalaType (Typ.singleton Nil)
 -- Useful for building a linked shape, before applying specific constraints.
 makeFun :: [[Int]] -> LalaType
 makeFun = LalaType . Typ.makeFun
+
+-- | Build a function `a -> b`.
+fun :: LalaType -> LalaType -> LalaType
+fun (LalaType a) (LalaType b) = LalaType (Typ.fun a b)
 
 -- `ParsedType` infers shape from the input string, but doesn't perform any
 -- logic on the values.
