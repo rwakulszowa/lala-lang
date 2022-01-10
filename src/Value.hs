@@ -50,7 +50,7 @@ literalP :: Parser Literal
 literalP = strLiteralP <|> intLiteralP
   where
     strLiteralP = StrLiteral . T.pack <$> stringLiteral
-    intLiteralP = IntLiteral <$> signedInteger
+    intLiteralP = IntLiteral <$> signed integer
 
 instance Unparse Literal where
   unparse (StrLiteral s) = "\"" <> s <> "\""

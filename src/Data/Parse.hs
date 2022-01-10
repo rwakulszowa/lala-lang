@@ -11,13 +11,16 @@ module Data.Parse
   , identifier
   , stringLiteral
   , integer
-  , signedInteger
+  , float
+  , signed
   , reservedOp
   , symbol
   , Unparse(..)
   ) where
 
+import           Data.Functor.Identity
 import qualified Data.Text                              as T
+import           Text.Parsec
 import           Text.ParserCombinators.Parsec
 import           Text.ParserCombinators.Parsec.Expr
 import           Text.ParserCombinators.Parsec.Language
@@ -61,14 +64,17 @@ stringLiteral = Token.stringLiteral lexer
 
 integer = Token.integer lexer
 
+float = Token.float lexer
+
 reservedOp = Token.reservedOp lexer
 
 symbol = Token.symbol lexer
 
-signedInteger = do
+signed :: Num n => ParsecT String u Identity n -> ParsecT String u Identity n
+signed n = do
   sign <- optionMaybe $ char '-'
   let signMultiplier = maybe 1 (const $ -1) sign
-  num <- integer
+  num <- n
   return $ num * signMultiplier
 
 -- | Un-Parseable types.
